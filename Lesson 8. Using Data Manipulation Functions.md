@@ -1,0 +1,221 @@
+# Lesson 8. Using Data Manipulation Functions
+
+In this lesson, you’ll learn what functions are, what types of functions DBMSs support, and how to use these functions. You’ll also learn why SQL function use can be very problematic.
+
+## Understanding Functions
+
+Like almost any other computer language, SQL supports the use of functions to manipulate data. Functions are operations that are usually performed on data, usually to facilitate conversion and manipulation.
+
+An example of a function is the RTRIM() that we used in the last lesson to trim any spaces from the end of a string.
+
+### The Problem with Functions
+
+Before you work through this lesson and try the examples, you should be aware that using SQL functions can be highly problematic.
+
+Unlike SQL statements (for example, SELECT), which for the most part are supported by all DBMSs equally, functions tend to be very DBMS specific. In fact, very few functions are supported identically by all major DBMSs. Although all types of functionality are usually available in each DBMS, the function name or syntax can differ greatly. To demonstrate just how problematic this can be, Table 8.1 lists some three commonly needed functions, and their syntax as employed by various DBMSs:
+
+**Table 8.1. DBMS Function Differences**
+
+![Screen Shot 2018-08-12 at 10.59.11 AM](http://heropublic.oss-cn-beijing.aliyuncs.com/025926.png)
+
+As you can see, unlike SQL statements, SQL functions are not portable. This means that code you write for a specific SQL implementation might not work on another implementation.
+
+> **Portable**
+>
+> Code that is written so that it will run on multiple systems.
+
+With code portability in mind, many SQL programmers opt not to use any implementation-specific features. Although this is a somewhat noble and idealistic view, it is not always in the best interests of application performance. If you opt not to use these functions, you make your application code work harder. It must use other methods to do what the DBMS could have done more efficiently.
+
+Tip: Should You Use Functions?
+
+So now you are trying to decide whether you should or shouldn’t use functions. Well, that decision is yours, and there is no right or wrong choice. If you do decide to use functions, make sure you comment your code well, so that at a later date you (or another developer) will know exactly what SQL implementation you were writing to.
+
+
+
+## Using Functions
+
+Most SQL implementations support the following types of functions:
+
+- Text functions are used to manipulate strings of text (for example, trimming or padding values and converting values to upper and lowercase).
+- Numeric functions are used to perform mathematical operations on numeric data (for example, returning absolute numbers and performing algebraic calculations).
+- Date and time functions are used to manipulate date and time values and to extract specific components from these values (for example, returning differences between dates, and checking date validity).
+- System functions return information specific to the DBMS being used (for example, returning user login information).
+
+In the last lesson, you saw a function used as part of a column list in a SELECT statement, but that’s not all functions can do. You can use functions in other parts of the SELECT statement (for instance in the WHERE clause), as well as in other SQL statements (more on that in later lessons).
+
+### Text Manipulation Functions
+
+You’ve already seen an example of text-manipulation functions in the last lesson—the RTRIM() function was used to trim white space from the end of a column value. Here is another example, this time using the UPPER() function:
+
+```python
+MySQL [distributor]> select vend_name, upper(vend_name) as vend_name_upcase
+    -> from vendors
+    -> order by vend_name;
++-----------------+------------------+
+| vend_name       | vend_name_upcase |
++-----------------+------------------+
+| Bear Emporium   | BEAR EMPORIUM    |
+| Bears R Us      | BEARS R US       |
+| Doll House Inc. | DOLL HOUSE INC.  |
+| Fun and Games   | FUN AND GAMES    |
+| Furball Inc.    | FURBALL INC.     |
+| Jouets et ours  | JOUETS ET OURS   |
++-----------------+------------------+
+6 rows in set (0.064 sec)
+```
+
+As you can see, UPPER() converts text to upper case and so in this example each vendor is listed twice, first exactly as stored in the Vendors table, and then converted to upper case as column vend_name_upcase.
+
+Table 8.2 lists some commonly used text-manipulation functions.
+
+**Table 8.2. Commonly Used Text-Manipulation Functions**
+
+![Screen Shot 2018-08-12 at 11.45.20 AM](http://heropublic.oss-cn-beijing.aliyuncs.com/034543.png)
+
+One item in Table 8.2 requires further explanation. SOUNDEX is an algorithm that converts any string of text into an alphanumeric pattern describing the phonetic representation of that text. SOUNDEX takes into account similar sounding characters and syllables, enabling strings to be compared by how they sound rather than how they have been typed. Although SOUNDEX is not a SQL concept, most DBMSs do offer **SOUNDEX support.**
+
+> **Note: SOUNDEX Support** 
+>
+> SOUNDEX() is not supported by Microsoft Access or PostgreSQL, and so the following example will not work on those DBMSs.
+>
+> In addition, it is only available in SQLite if the SQLITE_SOUNDEX compile-time option is used when SQLite is built, and as this is not the default compile option, most SQLite implementations won’t support SOUNDEX().
+
+Here’s an example using the **SOUNDEX() function.** Customer Kids Place is in the Customers table and has a contact named **Michelle Green**. But what if that were a typo, and the contact actually was supposed to have been Michael Green? Obviously, searching by the correct contact name would return no data, as shown here:
+
+```python
+MySQL [distributor]> select cust_name, cust_contact from customers where cust_contact = "Michael Green";
+Empty set (0.032 sec)
+```
+
+Now try the same search using the SOUNDEX() function to match all contact names that sound similar to Michael Green:
+
+```python
+MySQL [distributor]> select cust_name, cust_contact 
+    -> from customers
+    -> where soundex(cust_contact) = soundex("micheal green");
++------------+----------------+
+| cust_name  | cust_contact   |
++------------+----------------+
+| Kids Place | Michelle Green |
++------------+----------------+
+1 row in set (0.012 sec)
+```
+
+In this example, the WHERE clause uses the SOUNDEX() function to convert both the cust_contact column value and the search string to their SOUNDEX values. Because Michael Green and Michelle Green sound alike, their SOUNDEX values match, and so the WHERE clause correctly filtered the desired data.
+
+### Date and Time Manipulation Functions
+
+Date and times are stored in tables using datatypes, and each DBMS uses its own special **varieties.** Date and time values are stored in special formats so that they may be sorted or filtered quickly and efficiently, as well as to save physical storage space.
+
+The format used to store dates and times is usually of no use to your applications, and so date and time functions are almost always used to read, expand, and manipulate these values. Because of this, date and time manipulation functions are some of the most important functions in the SQL language. Unfortunately, they also tend to be the least consistent and least portable.
+
+To demonstrate the use of date manipulation function, here is a simple example. The Orders table contains all orders **along with an order date.** To retrieve a list of all orders made in 2012 in SQL Server, do the following:
+
+MySQL and MariaDB have all sorts of date manipulation functions, but not DATEPART(). MySQL and MariaDB users can use a function named YEAR() to extract the year from a date:
+
+```python
+MySQL [distributor]> select order_num
+    -> from orders
+    -> where year(order_date) = 2012;
++-----------+
+| order_num |
++-----------+
+|     20005 |
+|     20006 |
+|     20007 |
+|     20008 |
+|     20009 |
++-----------+
+5 rows in set (0.063 sec)
+```
+
+The example shown here extracted and used part of a date (the year). To filter by a specific month the same process could be used, specifying an AND operator and both year and month comparisons.
+
+DBMSs typically offer far more than simple date part extraction. Most have functions for comparing dates, performing date based arithmetic, options for formatting dates, and more. But, as you have seen, date-time manipulation functions are particularly DBMS specific. Refer to your DBMS documentation for the list of the date-time manipulation functions it supports.
+
+### Numeric Manipulation Functions
+
+Numeric manipulation functions do just that—manipulate numeric data. These functions tend to be used primarily for algebraic, trigonometric, or geometric  calculations and, therefore, are not as frequently used as string or date and time manipulation functions.
+
+The **ironic** thing is that of all the functions found in the major DBMSs, the numeric functions are the ones that are most uniform and consistent. Table 8.3 lists some of the more commonly used numeric manipulation functions.
+
+![Screen Shot 2018-08-12 at 11.33.29 AM](http://heropublic.oss-cn-beijing.aliyuncs.com/033344.png)
+
+Refer to your DBMS documentation for a list of the supported mathematical manipulation functions.
+
+
+
+## Summary
+
+In this lesson, you learned how to use SQL’s data manipulation functions. You also learned that although these functions can be extremely useful in formatting, manipulating, and filtering data, the function details are very inconsistent from one SQL implementation to the next (as demonstrated by the differences between SQL Server and Oracle).
+
+
+
+
+
+
+
+#### `dates()`[¶](https://docs.djangoproject.com/en/dev/ref/models/querysets/#dates)
+
+- `dates`(*field*, *kind*, *order='ASC'*)[¶](https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.dates)
+
+
+Returns a `QuerySet` that evaluates to a list of [`datetime.date`](https://docs.python.org/3/library/datetime.html#datetime.date) objects representing all available dates of a particular kind within the contents of the `QuerySet`.
+
+`field` should be the name of a `DateField` of your model. `kind` should be either `"year"`, `"month"`, `"week"`, or `"day"`. Each [`datetime.date`](https://docs.python.org/3/library/datetime.html#datetime.date) object in the result list is “truncated” to the given `type`.
+
+- `"year"` returns a list of all distinct year values for the field.
+- `"month"` returns a list of all distinct year/month values for the field.
+- `"week"` returns a list of all distinct year/week values for the field. All dates will be a Monday.
+- `"day"` returns a list of all distinct year/month/day values for the field.
+
+`order`, which defaults to `'ASC'`, should be either `'ASC'` or `'DESC'`. This specifies how to order the results.
+
+Examples:
+
+```
+>>> Entry.objects.dates('pub_date', 'year')
+[datetime.date(2005, 1, 1)]
+>>> Entry.objects.dates('pub_date', 'month')
+[datetime.date(2005, 2, 1), datetime.date(2005, 3, 1)]
+>>> Entry.objects.dates('pub_date', 'week')
+[datetime.date(2005, 2, 14), datetime.date(2005, 3, 14)]
+>>> Entry.objects.dates('pub_date', 'day')
+[datetime.date(2005, 2, 20), datetime.date(2005, 3, 20)]
+>>> Entry.objects.dates('pub_date', 'day', order='DESC')
+[datetime.date(2005, 3, 20), datetime.date(2005, 2, 20)]
+>>> Entry.objects.filter(headline__contains='Lennon').dates('pub_date', 'day')
+[datetime.date(2005, 3, 20)]
+```
+
+Changed in Django 2.1:
+
+“week” support was added.
+
+#### `datetimes()`[¶](https://docs.djangoproject.com/en/dev/ref/models/querysets/#datetimes)
+
+- `datetimes`(*field_name*, *kind*, *order='ASC'*, *tzinfo=None*)[¶](https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.datetimes)
+
+
+Returns a `QuerySet` that evaluates to a list of [`datetime.datetime`](https://docs.python.org/3/library/datetime.html#datetime.datetime) objects representing all available dates of a particular kind within the contents of the `QuerySet`.
+
+`field_name` should be the name of a `DateTimeField` of your model.
+
+`kind` should be either `"year"`, `"month"`, `"week"`, `"day"`, `"hour"`, `"minute"`, or `"second"`. Each [`datetime.datetime`](https://docs.python.org/3/library/datetime.html#datetime.datetime) object in the result list is “truncated” to the given `type`.
+
+`order`, which defaults to `'ASC'`, should be either `'ASC'` or `'DESC'`. This specifies how to order the results.
+
+`tzinfo` defines the time zone to which datetimes are converted prior to truncation. Indeed, a given datetime has different representations depending on the time zone in use. This parameter must be a [`datetime.tzinfo`](https://docs.python.org/3/library/datetime.html#datetime.tzinfo) object. If it’s `None`, Django uses the [current time zone](https://docs.djangoproject.com/en/dev/topics/i18n/timezones/#default-current-time-zone). It has no effect when [`USE_TZ`](https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-USE_TZ) is `False`.
+
+Changed in Django 2.1:
+
+“week” support was added.
+
+Note
+
+This function performs time zone conversions directly in the database. As a consequence, your database must be able to interpret the value of `tzinfo.tzname(None)`. This translates into the following requirements:
+
+- SQLite: no requirements. Conversions are performed in Python with [pytz](http://pytz.sourceforge.net/) (installed when you install Django).
+- PostgreSQL: no requirements (see [Time Zones](https://www.postgresql.org/docs/current/static/datatype-datetime.html#DATATYPE-TIMEZONES)).
+- Oracle: no requirements (see [Choosing a Time Zone File](https://docs.oracle.com/database/121/NLSPG/ch4datetime.htm#NLSPG258)).
+- MySQL: load the time zone tables with [mysql_tzinfo_to_sql](https://dev.mysql.com/doc/refman/en/mysql-tzinfo-to-sql.html).
