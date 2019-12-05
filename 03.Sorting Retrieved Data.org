@@ -1,0 +1,195 @@
+* Lesson 3. Sorting Retrieved Data
+
+
+In this lesson, you will learn how to use the SELECT statement's ORDER BY clause to sort retrieved data as needed.
+
+** Sorting Data
+
+
+As you learned in the last lesson, the following SQL statement returns a single column from a database table. But look at the output. The data appears to be displayed in no particular order at all.
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_name from Products
+#+end_src
+
+#+RESULTS:
+| prod_name           |
+|---------------------|
+| Fish bean bag toy   |
+| Bird bean bag toy   |
+| Rabbit bean bag toy |
+| 8 inch teddy bear   |
+| 12 inch teddy bear  |
+| 18 inch teddy bear  |
+| Raggedy Ann         |
+| King doll           |
+| Queen doll          |
+
+
+Actually, the retrieved data is not displayed in a mere random order. If unsorted, data will typically be displayed in the order in which it appears in the underlying tables. This could be the order in which the data was added to the tables initially. However, if data was subsequently updated or deleted, the order will be affected by how the DBMS reuses reclaimed storage space. The end result is that you cannot (and should not) rely on the sort order if you do not explicitly control it. Relational database design theory states that the sequence of retrieved data cannot be assumed to have significance if Ordering nwas not explicitly specified.
+
+#+BEGIN_QUOTE
+  *Clause*
+
+  SQL statements are made up of clauses, some required and some optional. A clause usually consists of a keyword and supplied data. An example of this is the SELECT statement's FROM clause, which you saw in the last lesson.
+#+END_QUOTE
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_name from Products order by prod_name;
+#+end_src
+
+#+RESULTS:
+| prod_name           |
+|---------------------|
+| 12 inch teddy bear  |
+| 18 inch teddy bear  |
+| 8 inch teddy bear   |
+| Bird bean bag toy   |
+| Fish bean bag toy   |
+| King doll           |
+| Queen doll          |
+| Rabbit bean bag toy |
+| Raggedy Ann         |
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+show tables;
+#+end_src
+
+#+RESULTS:
+| No. | Tables_in_grocer |
+|-----+------------------|
+|   1 | Customers        |
+|   2 | OrderItems       |
+|   3 | Orders           |
+|   4 | Products         |
+|   5 | Vendors          |
+
+This statement is identical to the earlier statement, except it also specifies an ORDER BY clause instructing the DBMS software to sort the data by the prod_name column. The results are as follows:
+
+#+BEGIN_QUOTE
+  *Caution: Position of ORDER BY Clause*
+
+  When specifying an ORDER BY clause, be sure that it is the last clause in your SELECT statement. If it is not the last clause, an error will be generated.
+#+END_QUOTE
+# 嗯, 原来如此.
+#+BEGIN_QUOTE
+  *Tip: Sorting by Nonselected Columns*
+
+  Although more often than not the columns used in an ORDER BY clause will be ones selected for display, this is actually not required. It is perfectly legal to sort data by a column that is not retrieved.
+#+END_QUOTE
+
+** Sorting by Multiple Columns
+
+It is often necessary to sort data by more than one column. For example, if you are displaying an employee list, you might want to display it sorted by last name and first name (first by last name, and then within each last name sort by first name). This would be useful if there are multiple employees with the same last name.
+
+To sort by multiple columns, simply specify the column names separated by commas (just as you do when you are selecting multiple columns).
+
+The following code retrieves three columns and sorts the results by two of them---first by price and then by name.
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_id, prod_price, prod_name
+from Products
+order by prod_price, prod_name;
+#+end_src
+
+#+RESULTS:
+| prod_id | prod_price | prod_name           |
+|---------+------------+---------------------|
+| BNBG02  |       3.49 | Bird bean bag toy   |
+| BNBG01  |       3.49 | Fish bean bag toy   |
+| BNBG03  |       3.49 | Rabbit bean bag toy |
+| RGAN01  |       4.99 | Raggedy Ann         |
+| BR01    |       5.99 | 8 inch teddy bear   |
+| BR02    |       8.99 | 12 inch teddy bear  |
+| RYL01   |       9.49 | King doll           |
+| RYL02   |       9.49 | Queen doll          |
+| BR03    |      11.99 | 18 inch teddy bear  |
+# 当然下面紧接着便是ascending or decending的问题.
+It is important to understand that when you are sorting by multiple columns, the sort sequence is exactly as specified. In other words, using the output in the example above, the products are sorted by the prod_name column only when multiple rows have the same prod_price value. If all the values in the prod_price column had been unique, no data would have been sorted by prod_name.
+
+** Sorting by Column Position
+
+In addition to being able to specify sort order using column names, ORDER BY also supports ordering specified by relative column position. The best way to understand this is to look at an example:
+# 原来是分销商.
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_id, prod_price, prod_name from Products order by 2, 3;
+#+end_src
+
+#+RESULTS:
+| prod_id | prod_price | prod_name           |
+|---------+------------+---------------------|
+| BNBG02  |       3.49 | Bird bean bag toy   |
+| BNBG01  |       3.49 | Fish bean bag toy   |
+| BNBG03  |       3.49 | Rabbit bean bag toy |
+| RGAN01  |       4.99 | Raggedy Ann         |
+| BR01    |       5.99 | 8 inch teddy bear   |
+| BR02    |       8.99 | 12 inch teddy bear  |
+| RYL01   |       9.49 | King doll           |
+| RYL02   |       9.49 | Queen doll          |
+| BR03    |      11.99 | 18 inch teddy bear  |
+
+
+As you can see, the output is identical to that of the query above. The difference here is in the ORDER BY clause. Instead of specifying column names, the relative positions of selected columns in the SELECT list are specified. ORDER BY 2 means sort by the second column in the SELECT list, the prod_price column. ORDER BY 2, 3 means sort by prod_price and then by prod_name.
+
+The primary advantage of this technique is that it saves retyping the column names. But there are some downsides too. First, not explicitly listing column names increases the likelihood of you mistakenly specifying the wrong column. Second, it is all too easy to mistakenly reorder data when making changes to the SELECT list (forgetting to make the corresponding changes to the ORDER BY clause). And finally, obviously you cannot use this technique when sorting by columns that are not in the SELECT list.
+
+#+BEGIN_QUOTE
+  *Tip: Sorting by Nonselected Columns*
+
+  Obviously, this technique cannot be used when sorting by columns that do not appear in the SELECT list. However, you can mix and match actual column names and relative column positions in a single statement if needed.
+#+END_QUOTE
+
+** Specifying Sort Direction
+
+
+Data sorting is not limited to ascending sort orders (from A to Z). Although this is the default sort order, the ORDER BY clause can also be used to sort in descending order (from Z to A). To sort by descending order, the keyword DESC must be specified.
+
+The following example sorts the products by price in descending order (most expensive first):
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_id, prod_price, prod_name
+from Products
+order by prod_price desc, prod_name desc;
+#+end_src
+# 所以desc与column是一体的.
+#+RESULTS:
+| prod_id | prod_price | prod_name           |
+|---------+------------+---------------------|
+| BR03    |      11.99 | 18 inch teddy bear  |
+| RYL02   |       9.49 | Queen doll          |
+| RYL01   |       9.49 | King doll           |
+| BR02    |       8.99 | 12 inch teddy bear  |
+| BR01    |       5.99 | 8 inch teddy bear   |
+| RGAN01  |       4.99 | Raggedy Ann         |
+| BNBG03  |       3.49 | Rabbit bean bag toy |
+| BNBG01  |       3.49 | Fish bean bag toy   |
+| BNBG02  |       3.49 | Bird bean bag toy   |
+# 刚才讲过, order必须放到最后.
+
+The DESC keyword only applies to the column name that directly precedes it. In the example above, DESC was specified for the prod_price column, but not for the prod_name column. Therefore, the prod_price column is sorted in descending order, but the prod_name column (within each price) is still sorted in standard ascending order.
+
+#+BEGIN_QUOTE
+  *Caution: Sorting Descending on Multiple Columns*
+
+  If you want to sort descending on multiple columns, be sure each column has its own DESC keyword.
+#+END_QUOTE
+
+It is worth noting that DESC is short for DESCENDING, and both keywords may be used. The opposite of DESC is ASC (or ASCENDING), which may be specified to sort in ascending order. In practice, however, ASC is not usually used because ascending order is the default sequence (and is assumed if neither ASC nor DESC are specified).
+
+#+BEGIN_QUOTE
+  *Tip: Case-Sensitivity and Sort Orders*
+
+  When you are sorting textual data, is A the same as a? And does a come before B or after Z? These are not theoretical questions, and the answers depend on how the database is set up.
+
+  In dictionary sort order, A is treated the same as a, and that is the default behavior for most Database Management Systems. However, most good DBMSs enable database administrators to change this behavior if needed. (If your database contains lots of foreign language characters, this might become necessary.)
+
+  The key here is that, if you do need an alternate sort order, you may not be able to accomplish this with a simple ORDER BY clause. You may need to contact your database administrator.
+#+END_QUOTE
+
+** Summary
+
+
+In this lesson, you learned how to sort retrieved data using the SELECT statement's ORDER BY clause. This clause, w*hich must be the last in the SELECT statement*, can be used to sort data on one or more columns as needed.
+# 如此一点一滴的讲得好透彻.
+关键词 =order by=, 需要放置到最后
+individual columm, multiple columns, column postion, sort direction

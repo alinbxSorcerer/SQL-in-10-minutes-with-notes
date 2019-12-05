@@ -1,0 +1,167 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/gaowei/Documents/BooksInOrg/CookedMeat/SQL-in-10-Minutes/17.Creating-and-Manipulating-Tables.org
+
+
+* Creating Tables
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-12-05 Thu 15:56
+  :ARCHIVE_FILE: ~/Documents/BooksInOrg/CookedMeat/SQL-in-10-Minutes/17.Creating-and-Manipulating-Tables.org
+  :ARCHIVE_OLPATH: Lesson 17. Creating and Manipulating Tables
+  :ARCHIVE_CATEGORY: 17.Creating-and-Manipulating-Tables
+  :END:
+
+SQL is not used just for table data manipulation. Rather, SQL can be used to perform all database and table operations, including the *creation and manipulation* of tables themselves.
+
+There are generally two ways to create database tables:
+
++ Most DBMSs *come with* an administration tool that can be used to create and manage database tables interactively.
++ Tables may also be manipulated directly with SQL statements.
+
+To create tables programmatically, the CREATE TABLE SQL statement is used. It is worth noting that when you use interactive tools, you are actually using SQL statements. Instead of your writing these statements, however, the interface generates and executes the SQL seamlessly for you (the same is true for changes to existing tables).
+
+#+BEGIN_QUOTE
+  *Caution: Syntax Differences*
+
+  The exact syntax of the CREATE TABLE statement can vary from one SQL implementation to another. Be sure to refer to your DBMS documentation for more information on exactly what syntax and features it supports.
+#+END_QUOTE
+
+Complete coverage of all the options available when creating tables is beyond the scope of this lesson, but here are the basics. I'd recommend that You review your DBMS documentation for more information and *specifics.*
+
+#+BEGIN_QUOTE
+  *Note: DBMS Specific Examples*
+
+  For examples of DBMS specific CREATE TABLE statements, see the example table creation scripts described in Appendix A, "The Example Tables."
+#+END_QUOTE
+
+** Basic Table Creation
+   :PROPERTIES:
+   :CUSTOM_ID: basic-table-creation
+   :END:
+
+To create a table using CREATE TABLE, you must specify the following information:
+
+- The name of the new table specified after the keywords CREATE TABLE.
+- The name and definition of the table columns separated by commas.
+- Some DBMSs require that you also specify the table location.
+
+The following SQL statement creates the Products table used throughout this book:
+
+#+BEGIN_SRC python
+    CREATE TABLE Products
+    (
+        prod_id CHAR(10)  NOT NULL,
+        vend_id CHAR(10)  NOT NULL,
+        prod_name CHAR(254)  NOT NULL,
+        prod_price DECIMAL(8,2) NOT NULL,
+        prod_desc VARCHAR(1000)  NULL,
+    );
+#+END_SRC
+
+As you can see in the above statement, the table name is specified immediately following the CREATE TABLE keywords. The actual table definition (all the columns) is enclosed within parentheses. The columns themselves are separated by commas. This particular table is made up of five columns. Each column definition starts with the column name (which must be unique within the table), followed by the column's datatype. (Refer to Lesson 1, "Understanding SQL," for an explanation of datatypes. In addition, Appendix D, "Using SQL Datatypes," lists commonly used datatypes and their compatibility.) The entire statement is terminated with a semicolon after the closing parenthesis.
+
+I mentioned earlier that CREATE TABLE syntax varies greatly from one DBMS to another, and the simple script just seen demonstrates this. While the statement will work as is on Oracle, PostgreSQL, SQL Server, and SQLite, for MySQL the *varchar* must be replaced with text, and for DB2 the NULL must be removed from the final column. This is why I had to create a different SQL table creation script for each DBMS (as explained in Appendix A).
+
+#+BEGIN_QUOTE
+  *Tip: Statement Formatting*
+
+  As you will recall, white-space is ignored in SQL statements. Statements can be typed on one long line or broken up over many lines.
+
+  *It makes no difference at all.* This enables you to format your SQL as *best suits you.* The preceding CREATE TABLE statement is a good example of SQL statement formatting---the code is specified over multiple lines, with the column definitions indented for easier reading and editing. Formatting your SQL in this way is entirely optional, but highly recommended.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: Replacing Existing Tables*
+
+  When you create a new table, the table name specified must not exist or you'll generate an error. To prevent accidental overwriting, SQL requires that you first manually remove a table (see later sections for details) and then recreate it, *rather than just overwriting it.*
+#+END_QUOTE
+
+** Working With Null Values
+   :PROPERTIES:
+   :CUSTOM_ID: working-with-null-values
+   :END:
+
+Back in Lesson 4, "Filtering Data," you learned that NULL values are no values or the lack of a value. A column that allows NULL values also allows rows to be inserted with no value at all in that column. A column that does not allow NULL values does not accept rows with no value---in other words, that column will always be required when rows are inserted or updated.
+
+Every table column is either a NULL column or a NOT NULL column, and that state is specified in the table definition at creation time. Take a look at the following example:
+
+#+BEGIN_SRC python
+    MySQL [distributor]> create table contracts
+        -> (contract_num integer not null,
+        -> contract_date datetime not null,
+        -> contract_id char(10) not null);
+    Query OK, 0 rows affected (0.149 sec)
+#+END_SRC
+
+This statement creates the Orders table used throughout this book. Orders contains three columns: order number, order date, and the customer ID. All three columns are required, and so each contains the keyword NOT NULL. This will prevent the insertion of columns with no value. If someone tries to insert no value, an error will be returned, and the insertion will fail.
+
+This next example creates a table with a mixture of NULL and NOT NULL columns:
+
+#+BEGIN_SRC python
+    MySQL [distributor]> create table suppliers
+        -> supplier_id char(10) not null,
+        -> supplier_name char(50) not null,
+        -> supplier_address char(50),
+        -> supplier_city char(50),
+        -> supplier_state char(50),
+        -> supplier_zip char(10)  --漏掉了comma,
+        -> supplier_country char(50) );
+    ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'supplier_id char(10) not null,
+    supplier_name char(50) not null,
+    supplier_address' at line 2
+#+END_SRC
+
+This statement creates the Vendors table used throughout this book. The vendor ID and vendor name columns are both required, and are, therefore, specified as NOT NULL. The five remaining columns all allow NULL values, and so NOT NULL is not specified. NULL is the default setting, so if NOT NULL is not specified NULL is assumed.
+
+#+BEGIN_QUOTE
+  *Caution: Specifying NULL*
+
+  Most DBMSs treat the absence of NOT NULL to mean NULL. However, not all do. Some DBMSs requires the keyword NULL and will generate an error if it is not specified. Refer to your DBMS documentation for complete syntax information.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: Primary Keys and NULL Values*
+
+  Back in Lesson 1, you learned that primary keys are columns whose values uniquely identify every row in a table. Only columns that do not allow NULL values can be used in primary keys. Columns that allow no value at all cannot be used as unique identifiers.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Caution: Understanding NULL*
+
+  Don't confuse NULL values with empty strings. A NULL value is the lack of a value; it is not an empty string. If you were to specify '' (two single quotes with nothing in between them), that would be allowed in a NOT NULL column. An empty string is a valid value; it is not no value. NULL values are specified with the keyword NULL, not with an empty string.
+#+END_QUOTE
+
+** Specifying Default Values
+   :PROPERTIES:
+   :CUSTOM_ID: specifying-default-values
+   :END:
+
+SQL enables you to specify default values to be used if no value is specified when a row is inserted. Default values are specified using the DEFAULT keyword in the column definitions in the CREATE TABLE statement.
+
+Look at the following example:
+
+#+BEGIN_SRC python
+    MySQL [distributor]> create table ContractItems
+        -> (
+        -> contract_num integer not null,
+        -> contract_item integer not null,
+        -> prod_id char(10) not null,
+        -> quantity integer not null default 1,
+        -> item_price decimal(8,2) not null
+        -> );
+    Query OK, 0 rows affected (0.135 sec)
+#+END_SRC
+
+This statement creates the OrderItems table that contains the individual items that make up an order. (The order itself is stored in the Orders table.) The quantity column contains the quantity for each item in an order. In this example, adding the text DEFAULT 1 to the column description instructs the DBMS to use a quantity of 1 if no quantity is specified.
+
+Default values are often used to store values in date or time stamp columns. For example, the system date can be used as a default date by specifying the function or variable used to refer to the system date. For example, MySQL users may *specify DEFAULT CURRENT\_DATE(),* while Oracle users may specify DEFAULT SYSDATE, and SQL Server users may specify DEFAULT GETDATE().
+
+#+CAPTION: Screen Shot 2018-08-13 at 11.11.20 AM
+[[http://heropublic.oss-cn-beijing.aliyuncs.com/031136.png]]
+
+#+BEGIN_QUOTE
+  *Tip: Using DEFAULT Instead of NULL Values*
+
+  Many database developers use DEFAULT values instead of NULL columns, especially in columns that will be used in calculations or data groupings.
+#+END_QUOTE

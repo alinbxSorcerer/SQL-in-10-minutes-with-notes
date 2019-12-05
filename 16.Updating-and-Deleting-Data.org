@@ -1,0 +1,164 @@
+* Lesson 16. Updating and Deleting Data
+
+In this lesson, you will learn how to use the UPDATE and DELETE statements to enable you to further manipulate your table data.
+
+** Updating Data
+
+To update (modify) data in a table the UPDATE statement is used. UPDATE can be used in two ways:
+
+- To update specific rows in a table
+- To update all rows in a table
+
+You'll now take a look at each of these uses.
+
+#+BEGIN_QUOTE
+  *Caution: Don't Omit the WHERE Clause*
+
+  Special care must be exercised when using UPDATE, because it is all too easy to mistakenly update every row in your table. Please read this entire section on UPDATE before using this statement.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: UPDATE and Security*
+
+  Use of the UPDATE statement might require special security privileges in client-server DBMSs. Before you attempt to use UPDATE, make sure you have adequate security privileges to do so.
+#+END_QUOTE
+
+The UPDATE statement is very easy to use---some would say too easy. The basic format of an UPDATE statement is made up of three parts:
+
+- The table to be updated
+- The column names and their new values
+- The filter condition that determines which rows should be updated.
+
+Let's take a look at a simple example. Customer 1000000005 has no e-mail address on file and now has an address, and so that record needs updating. The following statement performs this update:
+
+#+BEGIN_SRC  sql :engine mysql :dbuser org :database grocer :results none
+update Customers
+set cust_email = "kim@thetoystore.com"
+where cust_id = "1000000005";
+#+END_SRC
+
+
+
+The UPDATE statement always begins with the name of the table being updated. In this example, it is the Customers table. The SET command is then used to assign the new value to a column. As used here, the SET clause sets the cust\_email column to the specified value:
+
+=SET cust_email = 'kim@thetoystore.com'=
+# 此处还是sicp的传统
+
+The UPDATE statement finishes with a WHERE clause that tells the DBMS which row to update. Without a WHERE clause, the DBMS would update all the rows in the Customers table with this new e-mail address---definitely not the desired effect.
+
+Updating multiple columns requires a slightly different syntax:
+
+#+BEGIN_SRC  sql :engine mysql :dbuser org :database grocer :results none
+    UPDATE Customers
+    SET cust_contact = 'Sam Roberts',
+    cust_email = 'sam@toyland.com'
+    WHERE cust_id = '1000000006';
+#+END_SRC
+
+When updating multiple columns, only a single SET command is used, and each column = value pair is separated by a comma. (No comma is specified after the last column.) In this example, columns cust_contact and cust_email will both be updated for customer 1000000006.
+# Notice, 最后一行没有comma
+#+BEGIN_QUOTE
+  *Tip: Using Subqueries in an UPDATE Statement*
+
+  Subqueries may be used in UPDATE statements, enabling you to update columns with data retrieved with a SELECT statement. Refer back to Lesson 11, "Working with Subqueries," for more information on subqueries and their uses.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: The FROM Keyword*
+
+  Some SQL implementations support a FROM clause in the UPDATE statement that can be used to update the rows in one table with data from another table. Refer to your DBMS documentation to see if it supports this feature.
+#+END_QUOTE
+
+To delete a column's value, you can set it to NULL (assuming the table is defined to allow NULL values). You can do this as follows:
+# 如此直接呀.
+#+BEGIN_SRC  sql :engine mysql :dbuser org :database grocer
+    UPDATE Customers
+    SET cust_email = NULL
+    WHERE cust_id = '1000000005';
+#+END_SRC
+
+Here the NULL keyword is used to save no value to the cust_email column. That is very different from saving an empty string---an empty string (specified as '') is a value, whereas NULL means that there is no value at all.
+
+** Deleting Data
+
+To delete (remove) data from a table, the DELETE statement is used. DELETE can be used in two ways:
+
+1) To delete specific rows from a table
+2) To delete all rows from a table
+
+Now let's take a look at each of these.
+
+#+BEGIN_QUOTE
+  *Caution: Don't Omit the WHERE Clause*
+
+  Special care must be *exercised* when using DELETE because it is all too easy to mistakenly delete every row from your table. Please read this entire section on DELETE before using this statement.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: DELETE and Security*
+
+  Use of the DELETE statement might require special security privileges in client-server DBMSs. Before you attempt to use DELETE, make sure you have adequate security privileges to do so.
+#+END_QUOTE
+
+I already stated that UPDATE is very easy to use. The good (and bad) news is that DELETE is even easier to use.
+
+The following statement deletes a single row from the Customers table (the row you added in the last lesson):
+
+#+BEGIN_SRC  sql :engine mysql :dbuser org :database grocer
+    DELETE
+    FROM Customers
+    WHERE cust_id = '1000000006';
+#+END_SRC
+
+This statement should be *self-explanatory*. DELETE FROM requires that you specify the name of the table from which the data is to be deleted. The WHERE clause filters which rows are to be deleted. In this example, only customer 1000000006 will be deleted. If the WHERE clause were omitted, this statement would have deleted every customer in the table!
+
+#+BEGIN_QUOTE
+  *Tip: Foreign Keys Are Your Friend*
+
+  Joins were introduced back Lesson 12, "Joining Tables," and as you learned then, joining two tables simply needs common fields in both those tables. But you can also have the DBMS enforce the relationship by using foreign keys. (You've seen these defined in Appendix A, "Sample Table Scripts.") When foreign keys are present, the DBMS uses them to *enforce referential integrity.* For example, if you tried to insert a new product into the Products table, the DBMS would not allow you to insert it with an unknown vendor id because the vend_id column is connected to the Vendors table as a foreign key. So what does this have to do with DELETE? Well, a nice side effect of using foreign keys to ensure *referential integrity* is that the DBMS usually prevents the deletion of rows that are needed for a relationship. For example, if you tried to delete a product from Products that was used in existing orders in OrderItems, that DELETE statement would throw an error and would be aborted. That's another reason to always define your foreign keys.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: The FROM Keyword*
+
+  In some SQL implementations, the FROM keyword following DELETE is optional. However, it is good practice to always provide this keyword, even if it is not needed. Doing this will ensure that your SQL code is portable between DBMSs.
+#+END_QUOTE
+
+DELETE takes no column names or wildcard characters. DELETE deletes entire rows, not columns. To delete specific columns use an UPDATE statement.
+
+#+BEGIN_QUOTE
+  an impressive insight.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Note: Table Contents, Not Tables*
+
+  The DELETE statement deletes rows from tables, even all rows from tables. But DELETE never deletes the table itself.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: Faster Deletes*
+
+  If you really do want to delete all rows from a table, don't use DELETE. Instead, use the TRUNCATE TABLE statement which accomplished the same thing but does it much quicker (because data changes are not logged).
+#+END_QUOTE
+
+** Guidelines for Updating and Deleting Data
+
+The UPDATE and DELETE statements used in the previous section all have WHERE clauses, and there is a very good reason for this. If you omit the WHERE clause, the UPDATE or DELETE will be applied to every row in the table. In other words, if you execute an UPDATE without a WHERE clause, every row in the table will be updated with the new values. Similarly if you execute DELETE without a WHERE clause, all the contents of the table will be deleted.
+
+Here are some important guidelines that many SQL programmers follow:
+
+1) Never execute an UPDATE or a DELETE without a WHERE clause unless you really do intend to update and delete every row.
+2) Make sure every table has a primary key (refer back to Lesson 12, "Joining Tables," if you have forgotten what this is), and use it as the WHERE clause whenever possible. (You may specify individual primary keys, multiple values, or value ranges.)
+3) Before you use a WHERE clause with an UPDATE or a DELETE, first test it with a SELECT to make sure it is filtering the right records---it is far too easy to write incorrect WHERE clauses.
+4) Use database enforced referential integrity (refer back to Lesson 12 for this one, too) so that the DBMS will not allow the deletion of rows that have data in other tables related to them.
+5) Some DBMSs allow database administrators to impose restrictions that prevent the execution of UPDATE or DELETE without a WHERE clause. If your DBMS supports this feature, consider using it.
+
+The bottom line is that SQL has no Undo button. Be very careful using UPDATE and DELETE, or you'll find yourself updating and deleting the wrong data.
+
+** Summary
+
+In this lesson, you learned how to use the UPDATE and DELETE statements to *manipulate* the data in your tables. You learned the syntax for each of these statements, as well as the *inherent* dangers they expose. You also learned why WHERE clauses are so important in UPDATE and DELETE statements, and you were given guidelines that should be followed to help *ensure* that data does not get damaged inadvertently.
+# 此处最重要的一点便是update and delete没有undo.
+update table   set  #multiple 没有comma
+delete from

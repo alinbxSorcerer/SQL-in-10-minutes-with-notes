@@ -1,0 +1,222 @@
+* Lesson 11. Working with Subqueries
+
+In this lesson, you'll learn what subqueries are and how to use them.
+
+** Understanding Subqueries
+
+SELECT statements are SQL queries. All the SELECT statements we have seen thus far are simple queries: single statements retrieving data from individual database tables.
+
+#+BEGIN_QUOTE
+  *Query*
+
+  Any SQL statement. However, the term is usually used to refer to SELECT statements.
+#+END_QUOTE
+
+SQL also enables you to create subqueries: queries that are embedded into other queries. Why would you want to do this? The best way to understand this concept is to look at a couple of examples.
+# subquery就如bash的subcommand
+** Filtering by Subquery
+
+The database tables used in all the lessons in this book are *relational tables*. (See Appendix A, "Sample Table Scripts," for a description of each of the tables and their relationships.) Orders are stored in two tables. The Orders table stores a single row for each order canontaining order number, customer ID, and order date. The individual order items are stored in the related OrderItems table. The Orders table does not store customer information. It only stores a customer ID. The actual customer information is stored in the Customers table.
+
+Now suppose you wanted a list of all the customers who ordered item RGAN01. What would you have to do to retrieve this information? Here are the steps:
+
+1. Retrieve the order numbers of all orders containing item RGAN01.
+2. Retrieve the customer ID of all the customers who have orders listed in the order numbers returned in the previous step.
+3. Retrieve the customer information for all the customer IDs returned in the previous step.
+
+Each of these steps can be executed as a separate query. By doing so, you use the results returned by one SELECT statement to populate the WHERE clause of the next SELECT statement.
+
+You can also use subqueries to combine all three queries into one single statement.
+
+The first SELECT statement should be self-explanatory by now. It retrieves the ordernum column for all order items with a prodid of RGAN01. The output lists the two orders containing this item:
+#+begin_src
+
+#+end_src
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+select order_num from OrderItems where prod_id = "rgan01";
+#+END_SRC
+
+#+RESULTS:
+| order_num |
+|-----------|
+|     20007 |
+|     20008 |
+
+Now that we know which orders contain the desired item, the next step is to retrieve the customer IDs associated with those orders numbers, 20007 and 20008. Using the IN clause described in Lesson 5, "Advanced Data Filtering," you can create a SELECT statement as follows:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+select cust_id from Orders where order_num in (20007, 20008);
+ #+END_SRC
+
+ #+RESULTS:
+ |    cust_id |
+ |------------|
+ | 1000000004 |
+ | 1000000005 |
+
+Now, combine the two queries by turning the first (the one that returned the order numbers) into a subquery. Look at the following SELECT statement:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+select cust_id from Orders
+where order_num in (select order_num from OrderItems where prod_id = "rgan01");
+ #+END_SRC
+
+ #+RESULTS:
+ |    cust_id |
+ |------------|
+ | 1000000004 |
+ | 1000000005 |
+
+Subqueries are always processed starting with the innermost SELECT statement and working outward. When the preceding SELECT statement is processed, the DBMS actually performs two operations.
+
+First it runs the subquery:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    select order_num from OrderItems where prod_id = "rgan01"
+#+END_SRC
+
+That query returns the two order numbers 20007 and 20008. Those two values are then passed to the WHERE clause of the outer query in the comma-delimited format required by the IN operator. The outer query now becomes
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    SELECT cust_id from Orders WHERE order_num IN (20007,20008)
+#+END_SRC
+
+As you can see, the output is correct and exactly the same as the output returned by the hard-coded WHERE clause above.
+
+#+BEGIN_QUOTE
+  *Tip: Formatting Your SQL*
+
+  SELECT statements containing subqueries can be difficult to read and debug, especially as they grow in complexity. Breaking up the queries over multiple lines and indenting the lines appropriately as shown here can greatly simplify working with subqueries.
+
+  Incidentally, this is where color coding also becomes invaluable, and the better DBMS clients do indeed color code SQL for just this reason. And this is also why the SQL statements in this book have been printed in color for you, it makes reading them, isolating their sections, and troubleshooting them, so much easier.
+r#+END_QUOTE
+
+You now have the IDs of all the customers who ordered item RGAN01. The next step is to retrieve the customer information for each of those customer IDs. The SQL statement to retrieve the two columns is
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+select cust_name, cust_contact
+from Customers
+where cust_id in ("1000000004", "1000000005");
+#+END_SRC
+
+#+RESULTS:
+| cust_name     | cust_contact       |
+|---------------+--------------------|
+| Fun4All       | Denise L. Stephens |
+| The Toy Store | Kim Howard         |
+
+Instead of hard-coding those customer IDs, you can turn this WHERE clause into a subquery:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+select cust_name, cust_contact from Customers
+where cust_id in (select cust_id from Orders where order_num in
+(select order_num from OrderItems where prod_id = "rgan01"));
+#+END_SRC
+
+#+RESULTS:
+| cust_name     | cust_contact       |
+|---------------+--------------------|
+| Fun4All       | Denise L. Stephens |
+| The Toy Store | Kim Howard         |
+
+To execute the above SELECT statement, the DBMS had to actually perform three SELECT statements. The innermost subquery returned a list of order numbers that were then used as the WHERE clause for the subquery above it. That subquery returned a list of customer IDs that were used as the WHERE clause for the top-level query. The top-level query actually returned the desired data.
+
+As you can see, using subqueries in a WHERE clause enables you to write extremely powerful and flexible SQL statements. There is no limit imposed on the number of subqueries that can be nested, although in practice you will find that performance will tell you when you are nesting too deeply.
+
+#+BEGIN_QUOTE
+  *Caution: Single Column Only*
+
+  Subquery SELECT statements can only retrieve a single column. Attempting to retrieve multiple columns will return an error.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Caution: Subqueries and Performance*
+
+  The code shown here works, and it achieves the desired result. However, using subqueries is not always the most efficient way to perform this type of data retrieval. More on this in Lesson 12, "Joining Tables," where you will revisit this same example.
+#+END_QUOTE
+
+** Using Subqueries as Calculated Fields
+
+
+Another way to use subqueries is in creating calculated fields. Suppose you want to *display the total number of orders placed by every customer* in your Customers table. Orders are stored in the Orders table along with the appropriate customer ID.
+
+To perform this operation, follow these steps:
+
+1. Retrieve the list of customers from the Customers table.
+2. For each customer retrieved, count the number of associated orders in the Orders table.
+
+As you learned in the previous two lessons, you can use SELECT COUNT(*) to count rows in a table, and by providing a WHERE clause to filter a specific customer ID, you can count just that customer's orders. For example, the following code counts the number of orders placed by customer 1000000001:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+select cust_id, count(*) as orders from Orders group by cust_id;
+#+END_SRC
+
+To perform that COUNT(/) calculation for each customer, use COUNT/ as a subquery. Look at the following code:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+
+    select cust_name, cust_state,
+    (select count(*) from Orders where Orders.cust_id = Customers.cust_id) as orders
+    from Customers
+    order by cust_name;
+#+END_SRC
+
+#+RESULTS:
+| cust_name     | cust_state | orders |
+|---------------+------------+--------|
+| Fun4All       | IN         |      1 |
+| Fun4All       | AZ         |      1 |
+| Kids Place    | OH         |      0 |
+| The Toy Store | IL         |      1 |
+| Village Toys  | MI         |      2 |
+
+
+
+|   |
+
+This SELECT statement returns three columns for every customer in the Customers table: custname, custstate, and orders. Orders is a calculated field that is set by a subquery that is provided in parentheses. That subquery is executed once for every customer retrieved. In the example above, the subquery is executed five times because five customers were retrieved.
+
+The WHERE clause in the subquery is a little different from the WHERE clauses used previously because it uses fully qualified column names, instead of just a column name (custid), it specifies the table and the column name (as Orders.custid and Customers.custid). The following WHERE clause tells SQL to compare the custid in the Orders table to the one currently being retrieved from the Customers table:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    WHERE Orders.cust_id = Customers.cust_id
+#+END_SRC
+
+will always return the total number of orders in the Orders table, the results will not be what you expected:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+select cust_id, cust_state,
+(select count(*) from Orders where Orders.cust_id = Customers.cust_id) as orders
+from Customers
+order by cust_name;
+#+END_SRC
+
+#+RESULTS:
+|    cust_id | cust_state | orders |
+|------------+------------+--------|
+| 1000000003 | IN         |      1 |
+| 1000000004 | AZ         |      1 |
+| 1000000002 | OH         |      0 |
+| 1000000005 | IL         |      1 |
+| 1000000001 | MI         |      2 |
+
+Although subqueries are extremely useful in constructing this type of SELECT statement, care must be taken to properly qualify ambiguous column names.
+
+#+BEGIN_QUOTE
+  *Caution: Fully Qualified Column Names*
+
+  You just saw a very important reason to use fully qualified column names, without the extra specificity the wrong results were returned because the DBMS misunderstood what you intended. Sometimes the *ambiguity* caused by the presence of conflicting column names will actually cause the DBMS to throw an error. For example, if you WHERE or ORDER BY clause specified a column name that was present in multiple tables. A good rule is that if you are ever working with more than one table in a SELECT statement, then use *fully qualified column names* to avoid any and all ambiguity.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: Subqueries May Not Always Be the Best Option*
+
+  As explained earlier in this lesson, although the sample code shown here works, it is often not the most efficient way to perform this type of data retrieval. You will revisit this example when you learn about JOINs in the next two lessons.
+#+END_QUOTE
+
+** Summary
+
+In this lesson, you learned what subqueries are and how to use them. The most common uses for subqueries are in WHERE clause IN operators and for populating calculated columns. You saw examples of both of these types of operations.
+# 总结归纳
+subqueries, filter by subqueries(用in), calculated fields
