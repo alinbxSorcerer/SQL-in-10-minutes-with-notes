@@ -1,0 +1,231 @@
+* Appendix C. SQL Statement Syntax
+
+To help you find the syntax you need when you need it, this appendix lists the syntax for the most frequently used SQL operations. Each statement starts with a brief description and then displays the appropriate syntax. For added convenience, you'll also find cross references to the lessons where specific statements are taught.
+
+When reading statement syntax, remember the following:
+
+• The =|= symbol is used to indicate one of several options, so =NULL|NOT NULL= means specify either =NULL= or =NOT NULL=.
+
+• Keywords or clauses contained within square parentheses =[like this]= are optional.
+
+• The syntax listed below will work with almost all DBMSs. You are advised to consult your own DBMS documentation for details of implementing specific syntactical changes.
+
+** ALTER TABLE
+
+
+=ALTER TABLE= is used to update the schema of an existing table. To create a new table, use =CREATE TABLE=. See [[file:part0024.html#ch17][Lesson 17]], “[[file:part0024.html#ch17][Creating and Manipulating Tables]],” for more information.
+
+Input
+
+--------------
+
+
+
+ALTER TABLE tablename
+(
+  ADD|DROP  column  datatype  [NULL|NOT NULL]  [CONSTRAINTS],
+  ADD|DROP  column  datatype  [NULL|NOT NULL]  [CONSTRAINTS],
+    ...
+);
+
+--------------
+
+** COMMIT
+
+
+=COMMIT= is used to write a transaction to the database. See [[file:part0027.html#ch20][Lesson 20]], “[[file:part0027.html#ch20][Managing Transaction Processin],” for more information.
+
+Input
+
+--------------
+
+COMMIT [TRANSACTION];
+
+--------------
+
+** CREATE INDEX
+
+
+=CREATE INDEX= is used to create an index on one or more columns. See [[file:part0029.html#ch22][Lesson 22]], “[[file:part0029.html#ch22][Understanding Advanced SQL Features]],” for more information.
+
+Input
+
+--------------
+
+CREATE INDEX indexname
+ON tablename (column, ...);
+
+--------------
+
+** CREATE PROCEDURE
+
+
+=CREATE PROCEDURE= is used to create a stored procedure. See [[file:part0026.html#ch19][Lesson 19]], “[[file:part0026.html#ch19][Working with Stored Procedures]],” for more information. Oracle uses a different syntax as described in that lesson.
+
+Input
+
+--------------
+
+[[file:part0057_split_001.html#p249pro01][Click here to view code imag]
+
+CREATE PROCEDURE procedurename [parameters] [options]
+AS
+SQL statement;
+
+--------------
+
+** CREATE TABLE
+
+
+=CREATE TABLE= is used to create new database tables. To update the schema of an existing table, use =ALTER TABLE=. See [[file:part0024.html#ch17][Lesson 17]] for more information.
+
+Input
+
+--------------
+
+
+CREATE TABLE tablename
+(
+    column    datatype    [NULL|NOT NULL]    [CONSTRAINTS],
+    column    datatype    [NULL|NOT NULL]    [CONSTRAINTS],
+       ...
+);
+
+--------------
+
+** CREATE VIEW
+
+
+=CREATE VIEW= is used to create a new view of one or more tables. See [[file:part0025.html#ch18][Lesson 18]], “[[file:part0025.html#ch18][Using Views]],” for more information.
+
+<<page_250>>Input
+
+--------------
+
+
+
+CREATE VIEW viewname AS
+SELECT columns, ...
+FROM tables, ...
+[WHERE ..
+[GROUP BY ..
+[HAVING ..;
+
+--------------
+
+** DELETE
+
+
+=DELETE= deletes one or more rows from a table. See [[file:part0023.html#ch16][Lesson 16]],
+
+Input
+
+--------------
+
+DELETE FROM tablename
+[WHERE ..;
+
+--------------
+
+** DROP
+
+
+=DROP= permanently removes database objects (tables, views, indexes, and so forth). See [[file:part0024.html#ch17][Lessons 17]] and [[file:part0025.html#ch18][18]] for more information.
+
+Input
+
+--------------
+
+
+
+DROP INDEX|PROCEDURE|TABLE|VIEW
+indexname|procedurename|tablename|viewname;
+
+--------------
+
+** INSERT
+
+
+=INSERT= adds a single row to a table. See [[file:part0022.html#ch15][Lesson 15]],
+
+--------------
+
+
+
+INSERT INTO tablename [(columns, ...)]
+VALUES(values, ...);
+
+--------------
+
+** INSERT SELECT
+
+
+=INSERT SELECT= inserts the results of a =SELECT= into a table. See [[file:part0022.html#ch15][Lesson 15]] for more information.
+
+--------------
+
+
+
+INSERT INTO tablename [(columns, ...)]
+SELECT columns, ... FROM tablename, ...
+[WHERE ..;
+
+--------------
+
+** ROLLBACK
+
+
+=ROLLBACK= is used to undo a transaction block. See [[file:part0027.html#ch20][Lesson 20]] for more information.
+
+Input
+
+--------------
+
+ROLLBACK [ TO savepointnam;
+
+--------------
+
+or
+
+Input
+
+--------------
+
+ROLLBACK TRANSACTION;
+
+--------------
+
+** SELECT
+
+
+=SELECT= is used to retrieve data from one or more tables (or views).
+
+
+
+--------------
+
+
+SELECT columnname, ...
+FROM tablename, ...
+[WHERE ..
+[UNION ..
+[GROUP BY ..
+[HAVING ..
+[ORDER BY ..;
+
+--------------
+
+** UPDATE
+
+
+=UPDATE= updates one or more rows in a table. See [[file:part0023.html#ch16][Lesson 16]] for more information.
+
+Input
+
+--------------
+
+UPDATE tablename
+SET columname = value, ...
+[WHERE ..;
+
+--------------

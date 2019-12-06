@@ -562,10 +562,67 @@ pandoc --wrap=none Lesson 11. Working with Subqueries.md -o Lesson 11. Working w
 
 #+begin_src ipython :session sql :results output
 ! ls
-! pandoc --wrap=none 'Lesson 19. Working with Stored Procedures.md' -o '19.Working-Stored-Procedures.org'
+! pandoc --wrap=none 'Lesson 22. Understanding Advanced SQL Features.md' -o '22.Understanding-Advanced-SQL-Features.org'
 
 #+end_src
 
 #+RESULTS:
-: 
-: pandoc: : openBinaryFile: does not exist (No such file or directory)
+#+begin_example
+'03.Sorting Retrieved Data.org'
+ 04.Filtering-Data.org
+ 05.Advanced-Data-Filtering.org
+ 06.Using-Wildcard-Filtering.org
+ 07.Creating-Calculated-Fields.org
+ 08.Using-Data-Manipulation-Functions.org
+ 09.Summarizing-Data.org
+ 10.Grouping-Data.org
+ 11.Working-with-Subqueries.org
+ 12.Joining-Tables.org
+ 13.Creating-Advanced-Joins.org
+ 14.Combining-Queries.org
+ 15.Inserting-Data.org
+ 16.Updating-and-Deleting-Data.org
+ 17.Creating-and-Manipulating-Tables.org
+ 17.Creating-and-Manipulating-Tables.org_archive
+ 18.Using-Views.org
+ 19.Working-Stored-Procedures.org
+ 20.Managing-Transaction-Processing.org
+ 21.Using-Cursors.org
+ create.txt
+'Lesson 10. Grouping Data.md'
+'Lesson 11. Working with Subqueries.md'
+'Lesson 12. Joining Tables.md'
+'Lesson 13. Creating Advanced Joins.md'
+'Lesson 14. Combining Queries.md'
+'Lesson 15. Inserting Data.md'
+'Lesson 16. Updating and Deleting Data.md'
+'Lesson 17. Creating and Manipulating Tables.md'
+'Lesson 18. Using Views.md'
+'Lesson 19. Working with Stored Procedures.md'
+'Lesson 1. Understanding SQL.md'
+'Lesson 1. Understanding SQL.org'
+'Lesson 20. Managing Transaction Processing.md'
+'Lesson 21. Using Cursors.md'
+'Lesson 22. Understanding Advanced SQL Features.md'
+'Lesson 2 Retrieving Data.md'
+'Lesson 3. Sorting Retrieved Data.md'
+'Lesson 4. Filtering Data.md'
+'Lesson 5. Advanced Data Filtering.md'
+'Lesson 6. Using Wildcard Filtering.md'
+'Lesson 7. Creating Calculated Fields.md'
+'Lesson 8. Using Data Manipulation Functions.md'
+'Lesson 9. Summarizing Data.md'
+ LICENSE
+ populate.txt
+ README.md
+ README.pdf
+'Z.Appendix 1.md'
+#+end_example
+
+
+#+begin_src ipython :session mysql :results output
+! rm *.md
+
+#+end_src
+
+#+RESULTS:

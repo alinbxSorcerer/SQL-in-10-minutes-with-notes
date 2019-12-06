@@ -66,19 +66,17 @@ Nonetheless, stored procedures are very useful and should be used. In fact, most
 ** Executing Stored Procedures
 
 Stored procedures are executed far more often than they are written, so we'll start there. The SQL statement to execute a stored procedure is simply EXECUTE. EXECUTE takes the name of the stored procedure and any parameters that need to be passed to it. Take a look at this example (you'll not be able to actually run it, as the stored procedure AddNewProduct does not exist):
-#+begin_src sql :engine mysql :dbuser org :database grocer
 
-#+end_src
 #+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
-    EXECUTE AddNewProduct('JTS01', 
-                          'Stuffed Eiffel Tower', 
-                          6.49, 
+    EXECUTE AddNewProduct('JTS01',
+                          'Stuffed Eiffel Tower',
+                          6.49,
                           'Plush stuffed toy with the text La Tour Eiffel in red white and blue');
 #+END_SRC
 
 Here a stored procedure named AddNewProduct is executed; it adds a new product to the Products table. AddNewProduct takes four parameters---the vendor ID (the primary key from the Vendors table), the product name, price, and description. These four parameters match four expected variables within the stored procedure (defined as part of the stored procedure itself). The stored procedure adds a new row to the Products table and assigns these passed attributes to the appropriate columns.
 
-In the Products table you'll notice that there is another column that needs a value: the prod\_id column, which is the table's primary key. Why was this value not passed as an attribute to the stored procedure? To ensure that IDs are generated properly, it is safer to have that process automated (and not rely on end users). *That is why a stored procedure is used in this example.* This is what this stored procedure does:
+In the Products table you'll notice that there is another column that needs a value: the prod_id column, which is the table's primary key. Why was this value not passed as an attribute to the stored procedure? To ensure that IDs are generated properly, it is safer to have that process automated (and not rely on end users). *That is why a stored procedure is used in this example.* This is what this stored procedure does:
 
 - It validates the passed data, ensuring that all four parameters have values.
 - It generates a unique ID to be used as the primary key.
@@ -86,62 +84,70 @@ In the Products table you'll notice that there is another column that needs a va
 
 This is the basic form of stored procedure execution. Depending on the DBMS used, other execution options include the following:
 
-- Optional parameters, with default values assumed if a parameter is not provided
-- Out-of-order parameters, specified in parameter=value pairs
-- Output parameters, allowing the stored procedure to update a parameter for use in the executing application
-- Data retrieved by a SELECT statement
-- Return codes, enabling the stored procedure to return a value to the executing application
+1) Optional parameters, with default values assumed if a parameter is not provided
+2) Out-of-order parameters, specified in parameter=value pairs
+3) Output parameters, allowing the stored procedure to update a parameter for use in the executing application
+4) Data retrieved by a SELECT statement
+5) Return codes, enabling the stored procedure to return a value to the executing application
 
 ** Creating Stored Procedures
-   :PROPERTIES:
-   :CUSTOM_ID: creating-stored-procedures
-   :END:
 
 As already explained, writing a stored procedure is not trivial. To give you a taste for what is involved, let's look at a simple example---a stored procedure that counts the number of customers in a mailing list who have e-mail addresses.
 
 #+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
-    CREATE PROCEDURE MailingListCount (
-    ListCount OUT INTEGER ) 
-    IS 
-    v_rows INTEGER; 
-    BEGIN 
-        SELECT COUNT(*) INTO v_rows 
-        FROM Customers 
-        WHERE NOT cust_email IS NULL; 
-        ListCount := v_rows; 
-        END;
+CREATE PROCEDURE MailingListCount(OUT ListCount INTEGER )
+BEGIN
+
+declare v_rows INTEGER;
+
+SELECT COUNT(*) INTO v_rows
+FROM Customers
+WHERE NOT cust_email IS NULL;
+
+SET ListCount := v_rows;
+
+END;
 #+END_SRC
+
+#+RESULTS:
+|   |
 
 This stored procedure takes a single parameter named ListCount. Instead of passing a value to the stored procedure, this parameter passes a value back from it. The keyword OUT is used to specify this behavior. Oracle supports parameters of types IN (those passed to stored procedures), OUT (those passed from stored procedures, as we've used here), and INOUT (those used to pass parameters to and from stored procedures). The stored procedure code itself is enclosed within BEGIN and END statements, and here a simple SELECT is performed to retrieve the customers with e-mail addresses. Then ListCount (the output parameter passed) is set with the number of rows that were retrieved.
 
 To invoke the Oracle example you could do the following:
 
 #+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
-    var ReturnValue NUMBER 
-    EXEC MailingListCount(:ReturnValue); 
+    var ReturnValue NUMBER
+    EXEC MailingListCount(:ReturnValue);
     SELECT ReturnValue;
 #+END_SRC
+
+#+RESULTS:
+|   |
 
 This code declares a variable to hold whatever the stored procedure returns, executes the store procedure, and then uses a SELECT to display the returned value.
 
 Here's the Microsoft SQL Server version:
 
 #+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
-    CREATE PROCEDURE MailingListCount 
-    AS 
-    DECLARE @cnt INTEGER 
-    SELECT @cnt = COUNT(*) 
-    FROM Customers 
+    CREATE PROCEDURE MailingListCount
+    AS
+    DECLARE @cnt INTEGER
+    SELECT @cnt = COUNT(*)
+    FROM Customers
     WHERE NOT cust_email IS NULL; RETURN @cnt;
 #+END_SRC
+
+#+RESULTS:
+|   |
 
 This stored procedure takes no parameters at all. The calling application retrieves the value by using SQL Server's return code support. Here a local variable named @cnt is declared using the DECLARE statement (all local variables in SQL Server are named starting with a @). This variable is then used in the SELECT statement so that it contains the value returned by the COUNT() function. Finally, the RETURN statement is used to return the count to the calling application as RETURN @cnt.
 
 To invoke the SQL Server example you could do the following:
 
 #+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
-    DECLARE @ReturnValue INT 
-    EXECUTE @ReturnValue=MailingListCount; 
+    DECLARE @ReturnValue INT
+    EXECUTE @ReturnValue=MailingListCount;
     SELECT @ReturnValue;
 #+END_SRC
 
@@ -150,21 +156,21 @@ This code declares a variable to hold whatever the stored procedure returns, exe
 Here's another example, this time to insert a new order in the Orders table. This is a SQL Server--only example, but it demonstrates some useful stored procedure uses and techniques:
 
 #+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
-    CREATE PROCEDURE NewOrder @cust_id CHAR(10) 
-    AS 
-    -- Declare variable for order number 
-    DECLARE @order_num INTEGER 
-    -- Get current highest order number 
-    SELECT @order_num=MAX(order_num) FROM Orders 
-    -- Determine next order number 
-    SELECT @order_num=@order_num+1 
-    -- Insert new order INSERT INTO Orders(order_num, order_date, cust_id) 
-    VALUES(@order_num, GETDATE(), @cust_id) 
-    -- Return order number 
+    CREATE PROCEDURE NewOrder @cust_id CHAR(10)
+    AS
+    -- Declare variable for order number
+    DECLARE @order_num INTEGER
+    -- Get current highest order number
+    SELECT @order_num=MAX(order_num) FROM Orders
+    -- Determine next order number
+    SELECT @order_num=@order_num+1
+    -- Insert new order INSERT INTO Orders(order_num, order_date, cust_id)
+    VALUES(@order_num, GETDATE(), @cust_id)
+    -- Return order number
     RETURN @order_num;
 #+END_SRC
 
-This stored procedure creates a new order in the Orders table. It takes a single parameter, the ID of the customer placing the order. The other two table columns, the order number and order date, are generated automatically within the stored procedure itself. The code first declares a local variable to store the order number. Next, the current highest order number is retrieved (using a MAX() function) and incremented (using a SELECT statement). Then the order is inserted with an INSERT statement using the newly generated order number, the current system date (retrieved using the GETDATE() function), and the passed customer ID. Finally, the order number (which is needed to process order items) is returned as RETURN @order\_num. Notice that The code is commented---this should always be done when writing stored the procedures.
+This stored procedure creates a new order in the Orders table. It takes a single parameter, the ID of the customer placing the order. The other two table columns, the order number and order date, are generated automatically within the stored procedure itself. The code first declares a local variable to store the order number. Next, the current highest order number is retrieved (using a MAX() function) and incremented (using a SELECT statement). Then the order is inserted with an INSERT statement using the newly generated order number, the current system date (retrieved using the GETDATE() function), and the passed customer ID. Finally, the order number (which is needed to process order items) is returned as RETURN @order_num. Notice that The code is commented---this should always be done when writing stored the procedures.
 
 #+BEGIN_QUOTE
   *Note: Comment Your Code*
@@ -177,11 +183,11 @@ This stored procedure creates a new order in the Orders table. It takes a single
 Here's a quite different version of the same SQL Server code:
 
 #+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
-    CREATE PROCEDURE NewOrder @cust_id CHAR(10) 
-    AS 
-    -- Insert new order 
-    INSERT INTO Orders(cust_id) VALUES(@cust_id) 
-    -- Return order number 
+    CREATE PROCEDURE NewOrder @cust_id CHAR(10)
+    AS
+    -- Insert new order
+    INSERT INTO Orders(cust_id) VALUES(@cust_id)
+    -- Return order number
     SELECT order_num = @@IDENTITY;
 #+END_SRC
 
@@ -190,8 +196,6 @@ This stored procedure also creates a new order in the Orders table. This time th
 As you can see, with stored procedures there are often many different ways to accomplish the same task. The method you choose will often be dictated by the features of the DBMS you are using.
 
 ** Summary
-   :PROPERTIES:
-   :CUSTOM_ID: summary
-   :END:
 
 In this lesson, you learned what stored procedures are and why they are used. You also learned the basics of stored procedure execution and creation syntax, and you saw some of the ways these can be used. Stored procedures is a really important topic, and one that is far beyond the scope of one lesson. As you have seen here, stored procedures are implemented differently in each DBMS. In addition, your own DBMS probably offers some form of these functions, as well as others not mentioned here. Refer to your DBMS documentation for more details.
+# 总结, 等待回复吧.

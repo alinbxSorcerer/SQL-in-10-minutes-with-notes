@@ -1,0 +1,181 @@
+* Lesson 21. Using Cursors
+
+In this lesson, you'll learn what cursors are and how to use them.
+
+** Understanding Cursors
+
+SQL retrieval operations work with sets of rows known as result sets. The rows returned are all the rows that match a SQL statement---zero or more of them. Using simple SELECT statements, there is no way to get the first row, the next row, or the previous 10 rows. This is an integral part of how a relational DBMS works.
+
+#+BEGIN_QUOTE
+  *Result Set*
+
+  The results retrieved by a SQL query.
+#+END_QUOTE
+
+Sometimes there is a need to step through rows forward or backward and one or more at a time. This is what cursors are used for. A cursor is a database query stored on the DBMS server---not a SELECT statement, but the result set retrieved by that statement. Once the cursor is stored, applications can scroll or browse up and down through the data as needed.
+
+#+BEGIN_QUOTE
+  *Note: DBMS Specific Support*
+
+  Microsoft Access does support cursors. As such, this lesson does not apply to Microsoft Access.
+
+  Support for cursors was added to MySQL version 5. As such, this lesson will not be applicable if you are using earlier versions of MySQL.
+
+  SQLite supports a form of cursors called steps. The basic concepts described in this lesson apply to SQLite steps, but the syntax can be quite different.
+#+END_QUOTE
+
+Different DBMSs support different cursor options and features. Some of the more common ones are
+
+1) The capability to flag a cursor as read-only so that data can be read but not updated or deleted
+2) The capability to control the directional operations that can be performed (forward, backward, first, last, absolute position, relative position, and so on)
+3) The capability to flag some columns as editable and others as not editable
+4) Scope specification so as to be able to make the cursor accessible to a specific request that created it (a stored procedure, for example) or to all requests
+5) Instructing the DBMS to make a copy of the retrieved data (as opposed to pointing to the live data in the table) so that data does not change between the time the cursor is opened and the time it is accessed
+
+Cursors are used primarily by interactive applications in which users need to scroll up and down through screens of data, browsing or making changes.
+
+#+BEGIN_QUOTE
+  *Note: Cursors and Web-Based Applications*
+
+  Cursors are rather useless when it comes to Web-based applications (ASP, ASP.NET, ColdFusion, PHP, Python, Ruby, and JSP, for example). Cursors are designed to persist for the duration of a session between a client application and a server, but this client/server model does not fit in the Web application world because the application server is the database client, not the end user. As such, most Web application developers avoid the use of cursors and re-create the functionality themselves if needed.
+#+END_QUOTE
+
+** Working With Cursors
+ 
+Using cursors involves several distinct steps:
+
+1) Before a cursor can be used it must be declared (defined). This process does not actually retrieve any data, it merely defines the SELECT statement to be used and any cursor options.
+2) Once it is declared, the cursor must be opened for use. This process actually retrieves the data using the previously defined SELECT statement.
+3) With the cursor populated with data, individual rows can be fetched (retrieved) as needed.
+4) When it is done, the cursor must be closed and possibly deallocated (depending on the DBMS).
+
+Once a cursor is declared, it may be opened and closed as often as needed. Once it is open, fetch operations can be performed as often as needed.
+
+*** Creating Cursors
+#+begin_src sql :engine mysql :dbuser org :database grocer
+
+#+end_src
+Cursors are created using the DECLARE statement, which differs from one DBMS to the next. DECLARE names the cursor and takes a SELECT statement, complete with WHERE and other clauses if needed. To demonstrate this, we'll create a cursor that retrieves all customers without e-mail addresses, as part of an application enabling an operator to provide missing e-mail addresses.
+
+Here is the DB2, MariaDB, MySQL, and SQL Server version:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    DECLARE CustCursor CURSOR 
+    FOR 
+    SELECT * FROM Customers 
+    WHERE cust_email IS NULL
+#+END_SRC
+
+#+RESULTS:
+|   |
+
+Here is the Oracle and PostgreSQL version:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    DECLARE CURSOR CustCursor 
+    IS 
+    SELECT * FROM Customers WHERE cust_email IS NULL
+#+END_SRC
+
+#+RESULTS:
+|   |
+
+In both versions, the DECLARE statement is used to define and name the cursor---in this case CustCursor. The SELECT statement defines a cursor containing all customers with no e-mail address (a NULL value).
+
+Now that the cursor is defined, it is ready to be opened.
+
+*** Using Cursors
+
+Cursors are opened using the OPEN CURSOR statement, which is so simple a statement that most DBMSs support exactly the same syntax:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    OPEN CURSOR CustCursor
+#+END_SRC
+
+When the OPEN CURSOR statement is processed, the query is executed, and the retrieved data is stored for subsequent browsing and scrolling.
+
+Now the cursor data can be accessed using the FETCH statement. FETCH specifies the rows to be retrieved, where they are to be retrieved from, and where they are to be stored (variable names, for example). The first example uses Oracle syntax to retrieve a single row from the cursor (the first row):
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    DECLARE TYPE CustCursor IS REF CURSOR
+        RETURN Customers%ROWTYPE; 
+    DECLARE CustRecord Customers%ROWTYPE 
+    BEGIN
+        OPEN CustCursor; 
+        FETCH CustCursor INTO CustRecord; 
+        CLOSE CustCursor; 
+    END;
+#+END_SRC
+
+In this example, FETCH is used to retrieve the current row (it'll start at the first row automatically) into a declared variable named CustRecord. Nothing is done with the retrieved data.
+
+In the next example (again, using Oracle syntax), the retrieved data is looped through from the first row to the last:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    DECLARE TYPE CustCursor IS REF CURSOR
+        RETURN Customers%ROWTYPE; 
+    DECLARE CustRecord Customers%ROWTYPE 
+    BEGIN 
+        OPEN CustCursor; 
+        LOOP 
+        FETCH CustCursor INTO CustRecord; 
+        EXIT WHEN CustCursor%NOTFOUND;
+        ...
+.        END LOOP;
+        CLOSE CustCursor;
+#+END_SRC
+
+Like the previous example, this example uses FETCH to retrieve the current row into a declared variable named CustRecord. Unlike the previous example, the FETCH here is within a LOOP so that it is repeated over and over. The code EXIT WHEN CustCursor%NOTFOUND causes processing to be terminated (exiting the loop) when there are no more rows to be fetched. This example also does no actual processing; in real-world code you'd replace the ... placeholder with your own code.
+
+Here's another example, this time using Microsoft SQL Server syntax:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    DECLARE @cust_id CHAR(10), 
+            @cust_name CHAR(50), 
+            @cust_address CHAR(50), 
+            @cust_city CHAR(50), 
+            @cust_state CHAR(5), 
+            @cust_zip CHAR(10), 
+            @cust_country CHAR(50), 
+            @cust_contact CHAR(50), 
+            @cust_email CHAR(255)
+    OPEN CustCursor 
+    FETCH NEXT FROM CustCursor 
+        INTO @cust_id, @cust_name, @cust_address, 
+             @cust_city, @cust_state, @cust_zip, 
+             @cust_country, @cust_contact, @cust_email 
+             WHILE @@FETCH_STATUS = 0 
+    BEGIN
+
+    FETCH NEXT FROM CustCursor 
+            INTO @cust_id, @cust_name, @cust_address, 
+                 @cust_city, @cust_state, @cust_zip, 
+                 @cust_country, @cust_contact, @cust_email 
+    END
+    CLOSE CustCursor
+#+END_SRC
+
+In this example, variables are declared for each of the retrieved columns, and the FETCH statements retrieve a row and save the values into those variables. A WHILE loop is used to loop through the rows, and the condition WHILE @@FETCH\_STATUS = 0 causes processing to be terminated (exiting the loop) when there are no more rows to be fetched. Again, this example does no actual processing; in real-world code you'd replace the ... placeholder with your own code.
+
+*** Closing Cursors
+
+As already mentioned and seen in the previous examples, cursors need to be closed after they have been used. In addition, some DBMSs (such as SQL Server) require that the resources used by the cursor be explicitly deallocated. Here's the DB2, Oracle, and PostgreSQL syntax:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    CLOSE CustCursor
+#+END_SRC
+
+Here's the Microsoft SQL Server version:
+
+#+BEGIN_SRC sql :engine mysql :dbuser org :database grocer
+    CLOSE CustCursor 
+    DEALLOCATE CURSOR CustCursor
+#+END_SRC
+
+The CLOSE statement is used to close cursors; once a cursor is closed, it cannot be reused without being opened again. However, a cursor does not need to be declared again to be used; an OPEN is sufficient.
+
+** Summary
+ 
+In this lesson, you learned what cursors are and why they are used. Your own DBMS probably offers some form of this function, as well as others not mentioned here. Refer to your DBMS documentation for more details.
+# cursor根本没法正常工作.
+# 等待以后再看吧.

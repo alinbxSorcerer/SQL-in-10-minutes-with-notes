@@ -1,0 +1,123 @@
+* Appendix D. Using SQL Datatypes
+
+As explained in [[file:part0008.html#ch01][Lesson 1]], “[[file:part0008.html#ch01][Understanding SQL]],” datatypes are essentially rules that define what data may be stored in a column and how that data is actually stored.
+
+Datatypes are used for several reasons:
+
+• Datatypes enable you to restrict the type of data that can be stored in a column. For example, a numeric datatype column will only accept numeric values.
+
+• Datatypes allow for more efficient storage, internally. Numbers and date time values can be stored in a more condensed format than text strings.
+
+• Datatypes allow for alternate sorting orders. If everything is treated as strings, =1= comes before =10=, which comes before =2=. (Strings are sorted in dictionary sequence, one character at a time starting from the left.) As numeric datatypes, the numbers would be sorted correctly.
+
+When designing tables, pay careful attention to the datatypes being used. Using the wrong datatype can seriously impact your application. Changing the datatypes of existing populated columns is not a trivial task. (In addition, doing so can result in data loss.)
+
+Although this lesson is by no means a complete tutorial on datatypes and how they are to be used, it explains the major datatype types, what they are used for, and compatibility issues that you should be aware of.
+
+--------------
+
+Caution: No Two DBMSs Are Exactly Alike
+
+It's been said before, but it needs to be said again. Unfortunately, datatypes can vary dramatically from one DBMS to the next. Even the same datatype name can mean different things to different DBMSs. Be sure you consult your DBMS documentation for details on exactly what it supports and how.
+
+--------------
+
+** String Datatypes
+
+
+The most commonly used datatypes are string datatypes. These store strings: for example, names, addresses, phone numbers, and ZIP codes. There are basically two types of string datatype that you can use---fixed-length strings and variable-length strings (see [[file:part0033.html#app04tab01][Table D.1]]).
+
+Table D.1. String Datatypes
+
+[[../images/00022.jpeg]]
+
+Fixed-length strings are datatypes that are defined to accept a fixed number of characters, and that number is specified when the table is created. For example, you might allow 30 characters in a first-name column or 11 characters in a social-security-number column (the exact number needed allowing for the two dashes). Fixed-length columns do not allow more than the specified number of characters. They also allocate storage space for as many characters as specified. So, if the string =Ben= is stored in a 30-character first-name field, a full 30 characters are stored (and the text may be padded with spaces or nulls as needed).
+
+Variable-length strings store text of any length (the maximum varies by datatype and DBMS). Some variable-length datatypes have a fixed-length minimum. Others are entirely variable. Either way, only the data specified is saved (and no extra data is stored).
+
+If variable-length datatypes are so flexible, why would you ever want to used fixed-length datatypes? The answer is performance. DBMSs can sort and manipulate fixed-length columns far more quickly than they can sort variable-length columns. In addition, many DBMSs will not allow you to index variable-length columns (or the variable portion of a column). This also dramatically impacts performance. (See [[file:part0029.html#ch22][Lesson 22]], “[[file:part0029.html#ch22][Understanding Advanced SQL Features]],” for more information on indexes.)
+
+--------------
+
+Tip: Using Quotes
+
+Regardless of the form of string datatype being used, string values must always be surrounded by single quotes.
+
+--------------
+
+--------------
+
+Caution: When Numeric Values Are Not Numeric Values
+
+You might think that phone numbers and ZIP codes should be stored in numeric fields (after all, they only store numeric data), but doing so would not be advisable. If you store the ZIP code 01234 in a numeric field, the number 1234 would be saved. You'd actually lose a digit.
+
+The basic rule to follow is: If the number is a number used in calculations (sums, averages, and so on), it belongs in a numeric datatype column. If it is used as a literal string (that happens to contain only digits), it belongs in a string datatype column.
+
+--------------
+
+** Numeric Datatypes
+
+
+Numeric datatypes store numbers. Most DBMSs support multiple numeric datatypes, each with a different range of numbers that can be stored in it. Obviously, the larger the supported range, the more storage space needed. In addition, some numeric datatypes support the use of decimal points (and fractional numbers) whereas others support only whole numbers. [[file:part0033.html#app04tab02][Table D.2]] lists common uses for various datatypes, not all DBMSs follow the exact naming conventions and descriptions listed here.
+
+Table D.2. Numeric Datatypes
+
+[[../images/00023.jpeg]]
+
+--------------
+
+Tip: Not Using Quotes
+
+Unlike strings, numeric values should never be enclosed within quotes.
+
+
+
+--------------
+
+Tip: Currency Datatypes
+
+Most DBMSs support a special numeric datatype for storing monetary values. Usually called =MONEY= or =CURRENCY=, these datatypes are essentially =DECIMAL= datatypes with specific ranges that make them well-suited for storing currency values.
+
+--------------
+
+** Date and Time Datatypes
+
+
+All DBMSs support datatypes designed for the storage of date and time values (see [[file:part0033.html#app04tab03][Table D.3]]). Like numeric values, most DBMSs support multiple datatypes, each with different ranges and levels of precision.
+
+Table D.3. Date and Time Datatypes
+
+[[../images/00024.jpeg]]
+
+--------------
+
+Caution: Specifying Dates
+
+There is no standard way to define a date that will be understood by every DBMS. Most implementations understand formats like =2015-12-30= or =Dec 30th, 2015=, but even those can be problematic to some DBMSs. Make sure to consult your DBMS documentation for a list of the date formats that it will recognize.
+
+--------------
+
+--------------
+
+Tip: ODBC Dates
+
+Because every DBMS has its own format for specifying dates, ODBC created a format of its own that will work with every database when ODBC is being used. The ODBC format looks like ={d '2015-12-30'}= for dates, ={t '21:46:29'}= for times, and ={ts '2015-12-30 21:46:29'}= for date time values. If you are using SQL via ODBC, be sure your dates and times are formatted in this fashion.
+
+--------------
+
+** Binary Datatypes
+
+
+Binary datatypes are some of the least compatible (and, fortunately, also some of the least used) datatypes. Unlike all the datatypes explained thus far, which have very specific uses, binary datatypes can contain any data, even binary information, such as graphic images, multimedia, and word processor documents (see [[file:part0033.html#app04tab04][Table D.4]]).
+
+Table D.4. Binary Datatypes
+
+[[../images/00025.jpeg]]
+
+--------------
+
+Note: Comparing Datatypes
+
+If you would like to see a real-world example of database comparisons, look at the table creation scripts used to build the example tables in this book (see [[file:part0030.html#app01][Appendix A]], “[[file:part0030.html#app01][Sample Table Scripts]]”). By comparing the scripts used for different DBMSs you'll see first hand just how complex a task datatype matching is.
+
+--------------

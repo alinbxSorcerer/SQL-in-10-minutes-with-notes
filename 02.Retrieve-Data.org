@@ -1,0 +1,493 @@
+#+TITLE: 02.Retrieve-Data
+* 2 Retrieving Data
+
+In this lesson, you'll learn how to use the SELECT statement to retrieve
+one or more columns of data from a table.
+
+** The Select Stateement
+
+As explained in Lesson 1, "Understanding SQL," SQL statements are made
+up of plain English terms. These terms are called keywords, and every
+SQL statement is made up of one or more keywords. The SQL statement that
+you'll probably use most frequently is the SELECT statement. Its purpose
+is to retrieve information from one or more tables.
+
+#+BEGIN_QUOTE
+  *Keyword*
+  A reserved word that is part of the SQL language. Never name a table
+  or column using a keyword. Appendix E, "SQL Reserved Words,"
+#+END_QUOTE
+
+To use SELECT to retrieve table data you must, at a minimum, specify two
+pieces of information---what you want to select, and from where you want
+to select it.
+
+#+BEGIN_QUOTE
+  *Note: Following Along with the Examples*
+
+  The sample SQL statements (and sample output) throughout the lessons
+  in this book use a set of data files that are described in Appendix A,
+  "Sample Table Scripts." If you'd like to follow along and try the
+  examples yourself (I strongly recommend that you do so), refer to
+  Appendix A which contains instructions on how to download or create
+  these data files.
+
+  It is important to understand that SQL is a language, not an
+  application. The way that you specify SQL statements and display
+  statement output varies from one application to the next. To assist
+  you in adapting the examples to your own environment, Appendix B,
+  "Working in Popular Applications," explains how to issue the
+  statements taught throughout this book using many popular applications
+  and development environments. And if you need an application with
+  which to follow along, Appendix B has recommendations for you too.
+#+END_QUOTE
+
+** Retrieving Individual Column
+
+We'll start with a simple SQL SELECT statement, as follows:
+
+- Input
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_name from Products;
+#+end_src
+
+#+RESULTS:
+| prod_name           |
+|---------------------|
+| Fish bean bag toy   |
+| Bird bean bag toy   |
+| Rabbit bean bag toy |
+| 8 inch teddy bear   |
+| 12 inch teddy bear  |
+| 18 inch teddy bear  |
+| Raggedy Ann         |
+| King doll           |
+| Queen doll          |
+
+
+- Analysis
+
+  The previous statement uses the SELECT statement to retrieve a single
+  column called prod_name from the Products table. The desired column
+  name is specified right after the SELECT keyword, and the FROM keyword
+  specifies the name of the table from which to retrieve the data. The
+  output from this statement is shown in the following:
+  #+END_SRC
+
+  #+BEGIN_QUOTE
+    *Note: Unsorted Data*
+
+    If you tried this query yourself you might have discovered that the
+    data was displayed in a different order than shown here. If this is
+    the case, don't worry---it is working exactly as it is supposed to.
+    If query results are not explicitly sorted (we'll get to that in the
+    next lesson) then data will be returned in no order of any
+    significance. It may be the order in which the data was added to the
+    table, but it may not. As long as your query returned the same
+    number of rows then it is working.
+  #+END_QUOTE
+
+  #+BEGIN_QUOTE
+    这么一点简单的功能,似乎用ORM不能实现呀.
+  #+END_QUOTE
+
+A simple SELECT statement similar to the one used above returns all the
+rows in a table. Data is not filtered (so as to retrieve a subset of the
+results), nor is it sorted. We'll discuss these topics in the next few
+lessons.
+
+#+BEGIN_QUOTE
+  *Tip: Terminating Statements*
+
+  Multiple SQL statements must be separated by semicolons (the ;
+  character). Most DBMSs do not require that a semicolon be specified
+  after single statements. But if your particular DBMS *complains*, you
+  might have to add it there. Of course, you can always add a semicolon
+  if you wish. It'll do no harm, even if it is, in fact, not needed.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: SQL Statement and Case*
+
+  It is important to note that SQL statements are *case-insensitive,* so
+  SELECT is the same as select, which is the same as Select. Many SQL
+  developers find that using uppercase for all SQL keywords and
+  lowercase for column and table names *makes code easier to read and
+  debug.* However, be aware that while the SQL language is case-
+  insensitive, the names of tables, columns, and values may not be (that
+  depends on your DBMS and how it is configured).
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: Use of White Space*
+
+  All extra white space within a SQL statement is ignored when that
+  statement is processed. SQL statements can be specified on one long
+  line or broken up over many lines. So, the following three statements
+  are functionality identical:
+  # 可以写作多种格式．
+  #+begin_src sql :engine mysql :dbuser org :database grocer
+
+      SELECT prod_name
+      FROM Products;
+
+      SELECT prod_name FROM Products;
+
+      SELECT
+      prod_name
+      FROM
+      Products;
+  #+end_src
+
+  #+RESULTS:
+  | prod_name           |
+  |---------------------|
+  | Fish bean bag toy   |
+  | Bird bean bag toy   |
+  | Rabbit bean bag toy |
+  | 8 inch teddy bear   |
+  | 12 inch teddy bear  |
+  | 18 inch teddy bear  |
+  | Raggedy Ann         |
+  | King doll           |
+  | Queen doll          |
+  | prod_name           |
+  | Fish bean bag toy   |
+  | Bird bean bag toy   |
+  | Rabbit bean bag toy |
+  | 8 inch teddy bear   |
+  | 12 inch teddy bear  |
+  | 18 inch teddy bear  |
+  | Raggedy Ann         |
+  | King doll           |
+  | Queen doll          |
+  | prod_name           |
+  | Fish bean bag toy   |
+  | Bird bean bag toy   |
+  | Rabbit bean bag toy |
+  | 8 inch teddy bear   |
+  | 12 inch teddy bear  |
+  | 18 inch teddy bear  |
+  | Raggedy Ann         |
+  | King doll           |
+  | Queen doll          |
+
+  Most SQL developers find that breaking up statements over multiple
+  lines makes them easier to read and debug.
+#+END_QUOTE
+
+** Retrieving Multiple Columns
+
+To retrieve multiple columns from a table, the same SELECT statement is
+used. The only difference is that multiple column names must be
+specified after the SELECT keyword, and each column must be separated by
+a comma.
+
+#+BEGIN_QUOTE
+  *Tip: Take Care with Commas*
+
+  When selecting multiple columns be sure to specify a comma between
+  each column name, but not *after the last column name*. Doing so will
+  generate an error.
+#+END_QUOTE
+
+The following SELECT statement retrieves three columns from the products
+table:
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_id, prod_name, prod_price from Products;
+select * from Products;
+#+end_src
+
+#+RESULTS:
+| prod_id | prod_name           | prod_price          |            |                                                                       |
+|---------+---------------------+---------------------+------------+-----------------------------------------------------------------------|
+| BNBG01  | Fish bean bag toy   | 3.49                |            |                                                                       |
+| BNBG02  | Bird bean bag toy   | 3.49                |            |                                                                       |
+| BNBG03  | Rabbit bean bag toy | 3.49                |            |                                                                       |
+| BR01    | 8 inch teddy bear   | 5.99                |            |                                                                       |
+| BR02    | 12 inch teddy bear  | 8.99                |            |                                                                       |
+| BR03    | 18 inch teddy bear  | 11.99               |            |                                                                       |
+| RGAN01  | Raggedy Ann         | 4.99                |            |                                                                       |
+| RYL01   | King doll           | 9.49                |            |                                                                       |
+| RYL02   | Queen doll          | 9.49                |            |                                                                       |
+|---------+---------------------+---------------------+------------+-----------------------------------------------------------------------|
+| prod_id | vend_id             | prod_name           | prod_price | prod_desc                                                             |
+| BNBG01  | DLL01               | Fish bean bag toy   |       3.49 | Fish bean bag toy, complete with bean bag worms with which to feed it |
+| BNBG02  | DLL01               | Bird bean bag toy   |       3.49 | Bird bean bag toy, eggs are not included                              |
+| BNBG03  | DLL01               | Rabbit bean bag toy |       3.49 | Rabbit bean bag toy, comes with bean bag carrots                      |
+| BR01    | BRS01               | 8 inch teddy bear   |       5.99 | 8 inch teddy bear, comes with cap and jacket                          |
+| BR02    | BRS01               | 12 inch teddy bear  |       8.99 | 12 inch teddy bear, comes with cap and jacket                         |
+| BR03    | BRS01               | 18 inch teddy bear  |      11.99 | 18 inch teddy bear, comes with cap and jacket                         |
+| RGAN01  | DLL01               | Raggedy Ann         |       4.99 | 18 inch Raggedy Ann doll                                              |
+| RYL01   | FNG01               | King doll           |       9.49 | 12 inch king doll with royal garments and crown                       |
+| RYL02   | FNG01               | Queen doll          |       9.49 | 12 inch queen doll with royal garments and crown                      |
+# 经营杂货铺的老板.
+
+#+BEGIN_QUOTE
+  *Note: Presentation of Data*
+
+  As you will notice in the above output, SQL statements typically
+  return raw, unformatted data. Data formatting is a presentation issue,
+  not a retrieval issue. Therefore, presentation (for example,
+  displaying the above price values as currency amounts with the correct
+  number of decimal places) is typically specified in the application
+  that displays the data. Actual retrieved data (without
+  application-provided formatting) is rarely used.
+#+END_QUOTE
+
+** Retrieving All Columns
+
+In addition to being able to specify desired columns (one or more, as
+seen above), SELECT statements can also request all columns without
+having to list them individually. This is done using the asterisk (*)
+wildcard character in lieu of actual column names, as follows:
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select * from Products;
+#+end_src
+
+#+RESULTS:
+| prod_id | vend_id | prod_name           | prod_price | prod_desc                                                             |
+|---------+---------+---------------------+------------+-----------------------------------------------------------------------|
+| BNBG01  | DLL01   | Fish bean bag toy   |       3.49 | Fish bean bag toy, complete with bean bag worms with which to feed it |
+| BNBG02  | DLL01   | Bird bean bag toy   |       3.49 | Bird bean bag toy, eggs are not included                              |
+| BNBG03  | DLL01   | Rabbit bean bag toy |       3.49 | Rabbit bean bag toy, comes with bean bag carrots                      |
+| BR01    | BRS01   | 8 inch teddy bear   |       5.99 | 8 inch teddy bear, comes with cap and jacket                          |
+| BR02    | BRS01   | 12 inch teddy bear  |       8.99 | 12 inch teddy bear, comes with cap and jacket                         |
+| BR03    | BRS01   | 18 inch teddy bear  |      11.99 | 18 inch teddy bear, comes with cap and jacket                         |
+| RGAN01  | DLL01   | Raggedy Ann         |       4.99 | 18 inch Raggedy Ann doll                                              |
+| RYL01   | FNG01   | King doll           |       9.49 | 12 inch king doll with royal garments and crown                       |
+| RYL02   | FNG01   | Queen doll          |       9.49 | 12 inch queen doll with royal garments and crown                      |
+
+
+  *Caution: Using Wildcards*
+
+  As a rule, you are better off not using the * wildcard unless you
+  really do need every column in the table. Even though use of wildcards
+  may save you the time and effort needed to list the desired columns
+  explicitly, retrieving unnecessary columns usually slows down the
+  performance of your retrieval and your application.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: Retrieving Unknown Columns*
+
+  There is one big advantage to using wildcards. As you do not
+  explicitly specify column names (because the asterisk retrieves every
+  column), it is possible to retrieve columns whose names are unknown.
+#+END_QUOTE
+
+** Retrieving Distinct Column
+
+
+As you have seen, SELECT returns all matched rows. But what if you do
+not want every occurrence of every value? For example, suppose you want
+the vendor ID of all vendors with products in your products table:
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select vend_id from Products;
+#+end_src
+
+#+RESULTS:
+| vend_id |
+|---------|
+| BRS01   |
+| BRS01   |
+| BRS01   |
+| DLL01   |
+| DLL01   |
+| DLL01   |
+| DLL01   |
+| FNG01   |
+| FNG01   |
+
+# 从数据库查询里将pandas重新整理一遍, 用关键词.
+
+The SELECT statement returned 14 rows (even though there are only four
+vendors in that list) because there are 14 products listed in the
+products table. So how could you retrieve a list of distinct values?
+
+The solution is to use the DISTINCT keyword which, as its name implies,
+instructs the database to only return distinct values.
+
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select distinct vend_id from Products;
+#+end_src
+
+#+RESULTS:
+| vend_id |
+|---------|
+| BRS01   |
+| DLL01   |
+| FNG01   |
+
+
+SELECT DISTINCT vend_id tells the DBMS to only return distinct (unique)
+vend_id rows, and so only four rows are returned, as seen in the
+following output. If used, the DISTINCT keyword must be placed directly
+in front of the column names.
+
+#+BEGIN_QUOTE
+  *Caution: Can't Be Partially DISTINCT*
+
+  The DISTINCT keyword applies to all columns, not just the one it
+  precedes. If you were to specify SELECT DISTINCT vend\_id,
+  prod\_price, all rows would be retrieved unless both of the specified
+  columns were distinct.
+#+END_QUOTE
+
+** Limiting Results
+
+SELECT statements return all matched rows, possibly every row in the
+specified table. What if you want to return just the first row or a set
+number of rows? This is doable, *but unfortunately, this is one of those
+situations where all SQL implementations are not created equal.*
+
+If you are using MySQL, MariaDB, PostgreSQL, or SQLite, you can use the
+LIMIT clause, as follows:
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_name from Products  limit 5;
+#+end_src
+# 使用一个limit的概念.
+#+RESULTS:
+| prod_name           |
+|---------------------|
+| Fish bean bag toy   |
+| Bird bean bag toy   |
+| Rabbit bean bag toy |
+| 8 inch teddy bear   |
+| 12 inch teddy bear  |
+# limit就是head
+
+
+The previous statement uses the SELECT statement to retrieve a single
+column. LIMIT 5 instructs the supported DBMSs to return no more than
+five rows. The output from this statement is shown in the following
+code.
+
+To get the next five rows, specify both where to start and the number of
+rows to retrieve, like this:
+# next offset 5
+#+begin_src sql :engine mysql :dbuser org :database grocer
+select prod_name from Products limit 5 offset 5;
+#+end_src
+# slice
+#+RESULTS:
+| prod_name          |
+|--------------------|
+| 18 inch teddy bear |
+| Raggedy Ann        |
+| King doll          |
+| Queen doll         |
+
+
+LIMIT 5 OFFSET 5 instructs supported DBMSs to return five rows starting
+from row 5. The first number is where to start, and the second is the
+number of rows to retrieve. The output from this statement is shown in
+the following code:
+
+So, LIMIT specifies the number of rows to return. LIMIT with an OFFSET
+specifies where to start from. In our example there are only nine
+products in the Products table, so LIMIT 5 OFFSET 5 returned just four
+rows (as there was no fifth).
+
+#+BEGIN_QUOTE
+  *Caution: Row 0*
+
+  The first row retrieved is row 0, not row 1. As such, LIMIT 1 OFFSET 1
+  will retrieve the second row, not the first one.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Tip: MySQL and MariaDB Shortcut*
+
+  MySQL and MariaDB support a shorthand version of LIMIT 4 OFFSET 3,
+  enabling you to combine them as LIMIT 3,4. Using this syntax, the
+  value before the , is the LIMIT and the value after the , is the
+  OFFSET.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+  *Note: Not ALL SQL Is Created Equal*
+
+  I included this section on limiting results for one reason only, to
+  demonstrate that while SQL is usually quite consistent across
+  implementations, you can't rely on it always being so. While very
+  basic statements tend to be very portable, more complex ones tend to
+  be less so. Keep that in mind as you search for SQL solutions to
+  specific problems.
+#+END_QUOTE
+
+** Using Comments
+
+As you have seen, SQL statements are instructions that are processed by
+your DBMS. But what if you wanted to include text that you'd not want
+processed and executed? Why would you ever want to do this? Here are a
+few reasons:
+
+- The SQL statements we've been using here are all very short and very
+  simple. But, as your SQL statement grow (in length and complexity),
+  you'll want to include descriptive comments (for your own future
+  reference or for whoever has to work on the project next). These
+  comments need to be embedded in the SQL scripts, but they are
+  obviously not intended for actual DBMS processing. (For an example of
+  this, see the create.sql and populate.sql files used in Appendix B).
+- The same is true for headers at the top of SQL file, perhaps
+  containing the programmer contact information and a description and
+  notes. (This use case is also seen in the Appendix B .sql files.).
+- Another important use for comments is to temporarily stop SQL code
+  from being executed. If you were working with a long SQL statement,
+  and wanted to test just part of it, you could comment out some of the
+  code so that MariaDB saw it as comments and ignored it.
+
+Most DBMSs supports several forms of comment syntax. We'll Start with
+inline comments:
+
+#+BEGIN_SRC sql
+    SELECT prod_name -- this is a comment FROM Products;
+#+END_SRC
+
+Comments may be embedded inline using -- (two hyphens). Anything after
+the -- is considered comment text, making this a good option for
+describing columns in a CREATE TABLE statement, for example.
+
+Here is another form of inline comment (although less commonly
+supported):
+
+#+BEGIN_SRC sql
+    # This is a comment
+    SELECT prod_name
+    FROM Products;
+#+END_SRC
+
+A =#= at the start of a line makes the entire line a comment. You can
+see this format comment used in the accompanying create.sql and
+populate.sql scripts.
+
+You can also create *multi line* comments, and comments that stop and
+start anywhere within the script:
+
+#+BEGIN_SRC sql
+    /* SELECT prod_name,
+    vend_id FROM Products; */
+    SELECT prod_name FROM Products;
+#+END_SRC
+
+=/*= starts a comments, and =*/= ends it. Anything between =/*= and =*/=
+is comment text. This type of comment is often used to comment out code,
+as seen in this example. Here, two SELECT statements are defined, but
+the first won't execute because it has been commented out.
+
+** Summaries
+
+# distinct and slice, limit
+In this lesson, you learned how to use the *SQL SELECT* statement to
+retrieve a single table column, multiple table columns, and all table
+columns. You also learned how to return distinct values and how to
+comment your code. And unfortunately, you were also introduced to the
+fact that more complex SQL tends to be less portable SQL. Next you'll
+learn how to sort the retrieved data.
+
+Django查找的是精确的条目
+# 我在django里浪费了多少时间?!
+总结: select, retrieve individual, multiple, all

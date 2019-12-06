@@ -1,0 +1,331 @@
+* Appendix B. Working in Popular Applications
+
+As explained in [[file:part0008.html#ch01][Lesson 1]], “[[file:part0008.html#ch01][Understanding SQL]],” SQL is not an application, it is a language. To follow along with the examples in this book, you need an application that supports the execution of SQL statements.
+
+This appendix describes the steps for executing SQL statements in some of the more commonly used applications.
+
+You can use any application listed below, and many others, to test and experiment with SQL code. So which should you use?
+
+• Many DBMSs come with their own client utilities, so those are usually the best place to start. However, some don't have the most intuitive user interfaces.
+
+• If you are a web developer, then you can use any server-side web programming language, including ASP.NET, ColdFusion, Java, JSP, PHP, Python, and Ruby on Rails.
+
+• There are also lots of third party tools and utilities, some of which you'll find listed on the book Web page at [[http://forta.com/books/0672336073/]].
+
+** Using Apache Open Office Base
+
+
+Apache Open Office Base is an open source Java based client database application. Open Office Base queries can be written directly in SQL. To do so, perform the following steps:
+
+*1.* Open your database in Open Office Base.
+
+*2.* Select Queries in the Database panel on the left.
+
+<<page_234>>*3.* In the Tasks panel, click Create Query In SQL View to display the Query Design window.
+
+*4.* Type your SQL in the large text box (the entire window is the text box).
+
+*5.* To execute your SQL, click the Run Query button (the one with documents and a green check mark). You can also click F5 or select Run Query from the Edit menu.
+
+** Using Adobe ColdFusion
+
+
+Adobe ColdFusion is a Web-application development platform. ColdFusion uses a tag-based language to create scripts. To test your SQL, create a simple page that you can execute by calling it from your Web browser. Perform the following steps:
+
+*1.* Before using any databases from within ColdFusion code, a datasource must be defined. The ColdFusion Administrator program provides a Web-based interface to define Data Sources (refer to the ColdFusion documentation for help if needed).
+
+*2.* Create a new ColdFusion page (with a CFM extension).
+
+*3.* Use the CFML =<CFQUERY>= and =</CFQUERY>= tags to create a query block. Name it using the =NAME= attribute and define the Data Source in the =DATASOURCE= attribute.
+
+*4.* Type your SQL statement between the =<CFQUERY>= and =</CFQUERY>= tags.
+
+*5.* Use =<CFDUMP>= or a =<CFOUTPUT>= loop to display the query results.
+
+*6.* Save the page in any executable directory beneath the Web server root.
+
+*7.* Execute the page by calling it from a Web browser.
+
+** Using IBM DB2
+
+
+IBM's DB2 is a powerful high-end, multiplatform DBMS. It comes with a whole suite of client tools that may be used to execute SQL statements. The instructions that follow use the Java based Control Center utility because it is one of the simplest and most versatile of the bundled applications:
+
+*1.* Launch the Control Center.
+
+*2.* The Object View on the left lists all available database, expand All Databases and select your desired database.
+
+*3.* To open the Query screen, right-click on your database and select Query, or (while it is selected) choose Query from the Selected menu.
+
+*4.* Enter the SQL statement in the upper box.
+
+*5.* Click the Execute button (the one with the green right-facing arrow) to execute the script.
+
+*6.* Status information will be displayed in the lower window, switch to the Query Results tab to display results in a grid format.
+
+** Using MariaDB
+
+
+MariaDB does not have its own client utility, and uses MySQL clients (with which it is fully compatible). Please Refer to the “[[file:part0031.html#app02lev1sec10][Using MySQL]]” section below.
+
+** Using Microsoft Access
+
+
+Microsoft Access is usually used interactively to create and manage databases and to interact and manipulate data, and Access features a Query Designer which can be used to build a SQL statement interactively. A frequently overlooked feature of this Query Designer is that it also lets you specify SQL for direct execution. To use this feature, do the following:
+
+<<page_236>>*1.* Launch Microsoft Access. You will be prompted to open (or create) a database. Open the database that you want to use.
+
+*2.* Select Queries in the Database window. Then click on the New button and select Design View.
+
+*3.* You'll be prompted with a Show Table dialog. Close that window without selecting any tables.
+
+*4.* From the View menu, select SQL View to display the Query window.
+
+*5.* Type your SQL statement in the Query window.
+
+*6.* To execute the SQL statement click on the Run button (the one with the red exclamation mark). This will switch the view to Datasheet View (which displays the results in a grid).
+
+*7.* Toggle between SQL View and Datasheet View as needed (you'll need to go back to SQL View to change your SQL). You can also use Design View to interactively build SQL statements.
+
+** Using Microsoft ASP
+
+
+Microsoft ASP is a scripting platform for creating Web-based applications. To test your SQL statements within an ASP page, you must create a page that you can execute by calling it from your Web browser. Here are the steps needed to execute a SQL statement within an ASP page:
+
+*1.* ASP uses ODBC to interact with databases, so an ODBC Data Source must be present before proceeding (refer to the end of this appendix).
+
+*2.* Create a new ASP page (with an ASP extension) using any text editor.
+
+*3.* Use =Server.CreateObject= to create an instance of the =ADODB.Connection= object.
+
+*4.* Use the =Open= method to open the desired ODBC Data Source.
+
+<<page_237>>*5.* Pass your SQL statement to a call to the =Execute= method. The =Execute= method returns a result set. Use a =Set= command to save the result returned into a result set.
+
+*6.* To display the results, you must loop through the retrieved data using a =<% Do While NOT EOF %>= loop.
+
+*7.* Save the page in any executable directory beneath the Web server root.
+
+*8.* Execute the page by calling it from a Web browser.
+
+** Using Microsoft ASP.NET
+
+
+Microsoft ASP.NET is a scripting platform for creating Web-based applications using the .NET framework. To test SQL statements within an ASP.NET page, you must create a page that you can execute by calling it from your browser. There are multiple ways to accomplish this, but here is one option:
+
+*1.* Create a new file with a =.aspx= extensions.
+
+*2.* Create a database connection using =SqlConnection()= or =OleDbConnection()=.
+
+*3.* Use either =SqlCommand()= or =OleDbCommand()= to pass the statement to the DBMS.
+
+*4.* Create a DataReader using =ExecuteReader=.
+
+*5.* Loop through the returned reader to obtain the returned values.
+
+*6.* Save the page in any executable directory beneath the Web server root.
+
+*7.* Execute the page by calling it from a Web browser.
+
+** Using Microsoft Query
+
+Microsoft Query is a standalone SQL query tool and is an ideal utility for testing SQL statements against ODBC Data Sources. Microsoft Query is not installed on most Windows installation anymore. However, it is optionally installed with other Microsoft products, as well as with other third-party products, and can be used if present on your computer.
+
+--------------
+
+Tip: Obtaining MS-Query
+
+MS-Query is often installed with other Microsoft products (for example, Office) although it may only be installed if a complete installation was performed. If it is not present under the Start button, use Start Find to locate it on your system. (It is often present without your knowing it.) The files to look for are MSQRY32.EXE or MSQUERY.EXE.
+
+--------------
+
+To use Microsoft Query, do the following:
+
+*1.* Microsoft Query uses ODBC to interact with databases, so an ODBC Data Source must be present before you can proceed (see the instructions at the end of this appendix).
+
+*2.* Before you can use Microsoft Query, it must be installed on your computer. Browse your program groups beneath the Start button to locate it.
+
+*3.* From the File menu, select Execute SQL to display the Execute SQL window.
+
+*4.* Click the Data Sources button to select the desired ODBC Data Source. If the Data Source you need is not listed, click Other to locate it. After you have selected the correct Data Source, click the Use button.
+
+*5.* Type your SQL statement in the SQL Statement box.
+
+*6.* Click Execute to execute the SQL statement and to display any returned data.
+
+** Using Microsoft SQL Server (including Microsoft SQL Server Express)
+
+Microsoft SQL Server features a powerful management tool called SQL Server Management Studio. This tool can be used for everything from administering databases, to managing security, and reporting, and more. It also provides a great environment for writing and testing SQL statements. Here's how to use the SQL Server Management Studio:
+
+*1.* Launch SQL Server Management Studio.
+
+*2.* Provide server and login information if requested to do so.
+
+*3.* SQL Server Management Studio will then display a multi-panel display. Object Explorer on the left lists all databases and details, toolbars at the top contain buttons for specific functions, and a large text area taking up most of the display can be used to enter SQL Statements.
+
+*4.* A drop-down select box on the left side of the lower of the top toolbars shows you the currently selected database and also allows you to change databases. (Making a selection here is functionally identical to issuing a =USE= statement). Make sure you are using the right database, switching databases if needed.
+
+*5.* Type your SQL in the large text window, and then click the Execute Query button (the one with the red exclamation mark) to execute it. (You can also click F5 or select Execute from the Query menu.)
+
+*6.* The results will be displayed in a separate pane beneath the SQL window.
+
+*7.* Click the tabs at the bottom of the query screen to toggle between seeing data and seeing returned messages and information.
+
+** Using MySQL
+
+
+There are two ways to work with MySQL. The DBMS comes with a command-line utility named =mysql=. This is a text only tool which is usually installed as part of the MySQL installation, and which can be used to execute any SQL statements. In addition, the creators of MySQL have released an interactive tool called MySQL Workbench. This is usually a separate download and install, so it may not be present on all installations. Still, its use is highly recommended when learning MySQL.
+
+To use =mysql= from the command-line, do the following:
+
+*1.* Type =mysql= to launch the utility. Depending on how security is defined, you may need to use the =-u= and =-p= parameters to specify login information.
+
+*2.* At the =mysql>= prompt type =USE database= to open the desired database. (=USE tysql= opens the =tysql= database).
+
+*3.* Type your SQL at the =mysql>= prompt, making sure to terminate every statement with a semi-colon (=;=). Results will be displayed on the screen.
+
+*4.* Type =\h= for a list of commands that you may use, =\s= for status information (including MySQL version information).
+
+*5.* Type =\q= to quit the =mysql= utility.
+
+To use MySQL Workbench, do the following:
+
+*1.* Launch MySQL workbench.
+
+*2.* The leftmost column of MySQL Workbench lists available MySQL database connections, and allows you to access them. Click on any connection to open it, or select New Connection if your database is not listed.
+
+*3.* Once connected you'll be presented with a paneled display. Object Browser on the left lists available databases, a large text editor in the middle is used for entering SQL, and results or messages are shown below.
+
+<<page_241>>*4.* Click the +SQL button to open a new SQL window.
+
+*5.* Once you have typed your SQL, click the Execute button (the one with a picture of a lightning bolt) to run your SQL. Results will be displayed below.
+
+** Using Oracle
+
+
+Oracle comes with a large suite of tools and clients. The preferred one for use when learning SQL is Oracle SQL Developer. This may have been installed along with Oracle DBMS itself, and can also be downloaded and installed independently. Here's how to use this tool:
+
+*1.* Launch Oracle SQL Developer (Windows users should launch it using provided batch file, not via the application itself).
+
+*2.* Before you can any database you need to define a connection to it. This is done using the options in the Connections panel on the left.
+
+*3.* Once connected you can use the SQL Worksheet tab to enter your SQL statements in the Query Builder screen.
+
+*4.* To execute the SQL statement, click the Execute button (the one with the picture of the lightning bolt). Results will be displayed in the lower pane.
+
+** Using Oracle Express
+
+
+Oracle Express is a powerful yet easy-to-use DBMS with a very intuitive web based user interface. Once Oracle Express is installed, you'll also have a Getting Started link to launch the administration web page, and you can also use this page to run SQL commands. To do so, follow these steps:
+
+*1.* Launch the Oracle Express administration web page.
+
+*2.* When prompted, login with the username and password you provided at install time.
+
+<<page_242>>*3.* Once logged in you will see a series of icons, including one a picture of a screen with the word SQL on it. Click this to access the options.
+
+*4.* The first icon is SQL Commands, and this can be used to enter and text SQL. (The second, SQL Scripts, is useful for executing already written SQL scripts, like the create and populate scripts made available with this book). Click the SQL Commands icon to open the SQL Commands window.
+
+*5.* Type your SQL at the top of the screen.
+
+*6.* To execute your SQL query, click the Run button at the top right. Results will be shown below your SQL.
+
+** Using PHP
+
+
+PHP is a popular Web scripting language. PHP provides functions and libraries used to connect to a variety of databases, and so the code used to execute a SQL statement can vary based on the DBMS used (and how it is being accessed). As such, it is impossible to provide steps that can be used in each and every situation, and so one typical example (using MySQL) is provided. Refer to PHP documentation for instructions on how to connect to your specific DBMS.
+
+*1.* Create a new PHP page (with one of the PHP extensions).
+
+*2.* Connect to your database using the appropriate function. For MySQL use =mysql_connect()=.
+
+*3.* Pass your SQL statement to the appropriate query function. For MySQL use =mysql_query()=.
+
+*4.* An array of results will be returned, loop through them to display them.
+
+*5.* Save the page in any executable directory beneath the Web server root.
+
+*6.* Execute the page by calling it from a Web browser.
+
+** Using PostgreSQL
+
+
+There are two ways to work with PostgreSQL. The DBMS comes with a command-line utility named =psql=. This is a text only tool which is usually installed as part of the PostgreSQL installation, and which can be used to execute any SQL statements. In addition, there is an interactive tool called pgAdmin, which while primarily intended for DBMS administration, can also be used to test SQL statements.
+
+To use psql from the command-line, do the following:
+
+*1.* Type =psql= to launch the utility. To load a specific database specify it on the command-line as =psql database= (PostgreSQL does not support the USE command).
+
+*2.* Type your SQL at the ==>= prompt, making sure to terminate every statement with a semi-colon (=;=). Results will be displayed on the screen.
+
+*3.* Type =\?= for a list of commands that you may use.
+
+*4.* Type =\h= for SQL help, =\h statement= for help on specific SQL statement (for example, =\h SELECT=).
+
+*5.* Type =\q= to quit the psql utility.
+
+To use pgAdmin, do the following:
+
+*1.* Launch pgAdmin (it may be called pgAdmin III).
+
+*2.* Provide login information if prompted to do so.
+
+*3.* pgAdmin will display a list of database servers on the left. Select the one you intend to use and pgAdmin will connect to it and display server information.
+
+*4.* Then select the actual database (doing so will make toolbar buttons available for use).
+
+*5.* Locate the Execute Arbitrary SQL Queries button (yes, that really is its name, it's the one with a picture of a magnifying glass containing the words SQL).
+
+<<page_244>>*6.* A new screen will be displayed. Make sure the desired database is listed in the drop-down select box on the top right.
+
+*7.* You can now type SQL statements in the large text box at the top of the screen.
+
+*8.* Click the Execute Query button (it has a green right-facing arrow) to execute your SQL. Results will be shown below.
+
+** Using SQLite
+
+
+SQLite is generally intended to be used within other languages and applications, and is not usually used as a standalone database. However, SQLite does indeed come with a command-line utility that can be used to execute statements against a SQLite database. The SQLite command-line utility is called =sqlite3= (or =sqlite3.exe= on Windows). To use =sqlite3= from the command-line, do the following:
+
+*1.* =sqlite3= and your database should ideally be in the same folder. (SQLite databases are contained within a single file that often has a =.sqlite= or =.db= extension, but can in fact have any extension, or no extension at all).
+
+*2.* Type =sqlite3 database.sqlite= (replacing =database.sqlite= with the actual database file name).
+
+*3.* You'll see a =sqlite>= prompt which is where you type any SQL statements. All statements must be terminated by a =;=.
+
+*4.* By default, =sqlite3= displays returned data with pipe characters between columns and with no headers. To change this behavior type =.mode column= and press enter, and then =.header on= and press enter.
+
+*5.* To quit =sqlite3=, type .quit and press enter.
+
+** Configuring ODBC Data Sources
+
+
+Several of the applications described above use ODBC for database integration, and so we'll start with a brief overview of ODBC and instructions for configuring ODBC Data Sources.
+
+ODBC is a standard that is used to enable clients' applications to interact with different backend databases or underlying database engines. Using ODBC, is it possible to write code in one client and have those tools interact with almost any database or DBMS.
+
+ODBC itself is not a database. Rather, ODBC is a wrapper around databases that makes all databases behave in a consistent and clearly defined fashion. It accomplishes this by using software drivers that have two primary functions. First, they encapsulate any native database features or peculiarities and hide these from the client. Second, they provide a common language for interacting with these databases (performing translations when needed). The language used by ODBC is SQL.
+
+ODBC client applications do not interact with databases directly. Instead, they interact with ODBC Data Sources. A Data Source is a logical database that includes the driver (each database type has its own driver) and information on how to connect to the database (file paths, server names, and so forth).
+
+After ODBC Data Sources are defined, any ODBC-compliant application can use them. ODBC Data Sources are not application specific; they are system specific.
+
+--------------
+
+Caution: ODBC Differences
+
+There are many different versions of the ODBC applet, making it impossible to provide exact instructions that would apply to all versions. Pay close attention to the prompts when setting up your own Data Sources.
+
+--------------
+
+<<page_246>>ODBC Data Sources are defined using the Windows Control Panel's ODBC applet. To set up an ODBC Data Source, do the following:
+
+*1.* Open the Windows Control Panel's ODBC applet.
+
+*2.* Most ODBC Data Sources should be set up to be system-wide Data Sources (as opposed to user-specific Data Sources), so select System DSN, if that option is available to you.
+
+*3.* Click the Add button to add a new Data Source.
+
+*4.* Select the driver to use. There is usually a default set of drivers that provides support for major Microsoft products. Other drivers might be installed on your system. You must select a driver that matches the type of database to which you'll be connecting.
+
+*5.* Depending on the type of database or DBMS, you are prompted for server name or file path information and possibly login information. Provide this information as requested and then follow the rest of the prompts to create the Data Source.
